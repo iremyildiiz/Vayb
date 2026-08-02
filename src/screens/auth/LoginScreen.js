@@ -43,7 +43,7 @@ export default function LoginScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
         >
           <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.display, color: colors.textPrimary, marginBottom: spacing.xs }}>
-            Tekrar hoş geldin
+            Tekrar Hoşgeldin
           </Text>
           <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginBottom: spacing.xxl }}>
             Anları kaldığın yerden keşfet.

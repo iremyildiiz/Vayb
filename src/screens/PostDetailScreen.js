@@ -407,8 +407,8 @@ export default function PostDetailScreen({ navigation, route }) {
           {post.location?.name ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm }}>
               <Ionicons name="location-outline" size={14} color={colors.textMuted} />
-              <Text style={{ marginLeft: 4, fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted }}>
-                {post.location.name}
+              <Text numberOfLines={1} style={{ marginLeft: 4, fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted }}>
+                {String(post.location.name).split(',')[0].trim()}
               </Text>
             </View>
           ) : null}

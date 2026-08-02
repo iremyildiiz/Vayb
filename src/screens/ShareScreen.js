@@ -168,7 +168,7 @@ export default function ShareScreen({ navigation }) {
       try {
         const call = httpsCallable(functions, 'placesAutocomplete');
         const res = await call({ input: q, sessionToken: placesSession.current });
-        const list = (res?.data?.suggestions || []).map((s) => ({ name: s.text, placeId: s.placeId }));
+        const list = (res?.data?.suggestions || []).map((s) => ({ name: s.text, secondary: s.secondary, placeId: s.placeId }));
         if (alive) setLocSuggestions(list);
       } catch (e) {
         console.warn('[places] autocomplete hata:', e?.code, e?.message, e?.details);
@@ -486,9 +486,16 @@ export default function ShareScreen({ navigation }) {
                     hitSlop={4}
                   >
                     <Ionicons name="navigate-outline" size={15} color={colors.textMuted} />
-                    <Text style={{ flex: 1, marginLeft: spacing.sm, fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textPrimary }}>
-                      {item.name}
-                    </Text>
+                    <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                      <Text numberOfLines={1} style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textPrimary }}>
+                        {item.name}
+                      </Text>
+                      {item.secondary ? (
+                        <Text numberOfLines={1} style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, marginTop: 1 }}>
+                          {item.secondary}
+                        </Text>
+                      ) : null}
+                    </View>
                   </Pressable>
                 ))}
               </View>

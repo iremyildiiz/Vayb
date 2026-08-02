@@ -328,12 +328,21 @@ exports.placesAutocomplete = onCall({ region: 'us-central1', secrets: ['GOOGLE_P
   const data = await res.json();
   const raw = data.suggestions || [];
   // Mekanlar (cafe/müze/restoran/işletme/adres) ÖNCE, sorgu önerileri sonra.
+  // Instagram tarzı KISA isim: structuredFormat.mainText (mekan adı). Açık adres
+  // ayrı "secondary" alanında döner (öneri listesinde alt satır olarak gösterilir,
+  // gönderide saklanmaz).
+  const mapPred = (p) => {
+    const sf = p.structuredFormat || {};
+    const main = (sf.mainText && sf.mainText.text) || (p.text && p.text.text) || '';
+    const secondary = (sf.secondaryText && sf.secondaryText.text) || '';
+    return { text: main, secondary };
+  };
   const places = raw
     .filter((s) => s.placePrediction)
-    .map((s) => ({ placeId: s.placePrediction.placeId || null, text: (s.placePrediction.text && s.placePrediction.text.text) || '' }));
+    .map((s) => ({ placeId: s.placePrediction.placeId || null, ...mapPred(s.placePrediction) }));
   const queries = raw
     .filter((s) => s.queryPrediction && !s.placePrediction)
-    .map((s) => ({ placeId: null, text: (s.queryPrediction.text && s.queryPrediction.text.text) || '' }));
+    .map((s) => ({ placeId: null, ...mapPred(s.queryPrediction) }));
   const suggestions = [...places, ...queries].filter((s) => s.text);
 
   return { suggestions };
