@@ -56,6 +56,34 @@ export async function unfollow(followedUid) {
   await batch.commit();
 }
 
+// Engelleme sırasında iki yönlü takip ilişkisini koparır + sayaçları düzeltir.
+// (Bekleyen istekler sayacı etkilemediğinden yalnızca 'accepted' olanlar düşülür.)
+export async function severFollowBothWays(otherUid) {
+  const me = auth.currentUser?.uid;
+  if (!me || !otherUid) return;
+  const meToOther = doc(db, 'follows', fid(me, otherUid));
+  const otherToMe = doc(db, 'follows', fid(otherUid, me));
+  const [a, b] = await Promise.all([getDoc(meToOther), getDoc(otherToMe)]);
+  if (!a.exists() && !b.exists()) return;
+
+  const batch = writeBatch(db);
+  if (a.exists()) {
+    batch.delete(meToOther);
+    if (a.data().status === 'accepted') {
+      batch.set(doc(db, 'users', otherUid), { followersCount: increment(-1) }, { merge: true });
+      batch.set(doc(db, 'users', me), { followingCount: increment(-1) }, { merge: true });
+    }
+  }
+  if (b.exists()) {
+    batch.delete(otherToMe);
+    if (b.data().status === 'accepted') {
+      batch.set(doc(db, 'users', me), { followersCount: increment(-1) }, { merge: true });
+      batch.set(doc(db, 'users', otherUid), { followingCount: increment(-1) }, { merge: true });
+    }
+  }
+  await batch.commit();
+}
+
 // Bana gelen bekleyen istekler (tek eşitlik where → kompozit index gerekmez,
 // status istemcide filtrelenir).
 export async function getPendingRequests(uid) {

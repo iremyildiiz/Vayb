@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { getUserProfile, getUserPosts } from '../services/users';
 import { getFollowStatus, follow, unfollow, getPendingRequests } from '../services/follows';
 import ModerationSheet from '../components/ModerationSheet';
-import { isBlocked, blockUser, unblockUser, reportUser } from '../services/moderation';
+import { isBlocked, isBlockedByUser, blockUser, unblockUser, reportUser } from '../services/moderation';
 import { getUnreadNotificationCount } from '../services/notifications';
 import { createOrGetConversation } from '../services/chats';
 
@@ -67,6 +67,7 @@ export default function ProfileScreen({ navigation, route }) {
   const [acting, setActing] = useState(false);
   const [modOpen, setModOpen] = useState(false);
   const [iBlocked, setIBlocked] = useState(false);
+  const [blockedMe, setBlockedMe] = useState(false); // karşı taraf beni engelledi mi
 
   const sidePad = spacing.xl;
   const gap = spacing.md;
@@ -78,11 +79,18 @@ export default function ProfileScreen({ navigation, route }) {
       const prof = await getUserProfile(uid);
       let status = null;
       let blockedByMe = false;
+      let heBlockedMe = false;
       if (!isSelf) {
-        [status, blockedByMe] = await Promise.all([getFollowStatus(user.uid, uid), isBlocked(uid)]);
+        [status, blockedByMe, heBlockedMe] = await Promise.all([
+          getFollowStatus(user.uid, uid),
+          isBlocked(uid),
+          isBlockedByUser(uid),
+        ]);
         setIBlocked(blockedByMe);
+        setBlockedMe(heBlockedMe);
       }
-      const view = isSelf || (!blockedByMe && (!prof?.isPrivate || status === 'accepted'));
+      // Beni engelleyenin profilini de göremem (çift yönlü engel).
+      const view = isSelf || (!blockedByMe && !heBlockedMe && (!prof?.isPrivate || status === 'accepted'));
       const p = view ? await getUserPosts(uid) : [];
       setData(prof);
       setFollowStatus(status);
@@ -267,7 +275,7 @@ export default function ProfileScreen({ navigation, route }) {
               </Pressable>
 
             </>
-          ) : (
+          ) : (blockedMe || iBlocked) ? null : (
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: spacing.lg }}>
               {followStatus === 'accepted' ? (
                 <Pressable
@@ -317,6 +325,16 @@ export default function ProfileScreen({ navigation, route }) {
               </Text>
               <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs, maxWidth: 260, lineHeight: 20 }}>
                 Gönderileri gizlendi ve sana mesaj gönderemez. ⋯ menüsünden engeli kaldırabilirsin.
+              </Text>
+            </View>
+          ) : blockedMe ? (
+            <View style={{ alignItems: 'center', paddingVertical: spacing.xxl }}>
+              <Ionicons name="lock-closed-outline" size={40} color={colors.textMuted} />
+              <Text style={{ fontFamily: typography.fontBodyMedium, fontSize: typography.size.body, color: colors.textPrimary, marginTop: spacing.md }}>
+                Bu profil kullanılamıyor
+              </Text>
+              <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, textAlign: 'center', marginTop: spacing.xs, maxWidth: 260, lineHeight: 20 }}>
+                Bu hesabın içeriğine şu anda erişemezsin.
               </Text>
             </View>
           ) : !canView ? (

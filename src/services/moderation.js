@@ -7,6 +7,7 @@ import {
   doc, getDoc, setDoc, deleteDoc, addDoc, collection, query, where, getDocs, serverTimestamp,
 } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { severFollowBothWays } from './follows';
 
 const blockId = (a, b) => `${a}_${b}`;
 
@@ -34,6 +35,14 @@ export async function isBlocked(otherUid) {
   return s.exists();
 }
 
+// Karşı taraf BENİ engellemiş mi? (profil erişimini kesmek için)
+export async function isBlockedByUser(otherUid) {
+  const me = auth.currentUser?.uid;
+  if (!me || !otherUid) return false;
+  const s = await getDoc(doc(db, 'blocks', blockId(otherUid, me)));
+  return s.exists();
+}
+
 // Her iki yön: ben onu YA DA o beni engellemişse (DM engeli için).
 export async function isBlockedEitherWay(otherUid) {
   const me = auth.currentUser?.uid;
@@ -48,6 +57,8 @@ export async function isBlockedEitherWay(otherUid) {
 export async function blockUser(otherUid) {
   const me = auth.currentUser?.uid;
   if (!me || !otherUid || me === otherUid) return;
+  // Engelleme takip ilişkisini de koparır (her iki yön + sayaçlar).
+  await severFollowBothWays(otherUid);
   await setDoc(doc(db, 'blocks', blockId(me, otherUid)), {
     blockerUid: me,
     blockedUid: otherUid,
