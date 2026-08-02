@@ -115,13 +115,36 @@ export default function ProfileScreen({ navigation, route }) {
 
   const onBlockToggle = async () => {
     setModOpen(false);
-    try {
-      if (iBlocked) await unblockUser(uid);
-      else await blockUser(uid);
-      await load();
-    } catch (e) {
-      Alert.alert('İşlem başarısız', 'Engelleme güncellenemedi. Bağlantını kontrol edip tekrar dene.');
+    // Engeli kaldırma anında yapılır; engelleme geri dönüşü zor olduğundan onay sorulur.
+    if (iBlocked) {
+      try {
+        await unblockUser(uid);
+        await load();
+      } catch (e) {
+        Alert.alert('İşlem başarısız', 'Engelleme güncellenemedi. Bağlantını kontrol edip tekrar dene.');
+      }
+      return;
     }
+    const name = data?.username || data?.displayName || 'Bu kullanıcı';
+    Alert.alert(
+      'Engellensin mi?',
+      `${name} engellenecek. Gönderileriniz birbirinize görünmez, mesajlaşamazsınız ve varsa takip bağınız kalkar. İstediğinde ⋯ menüsünden engeli kaldırabilirsin.`,
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        {
+          text: 'Engelle',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await blockUser(uid);
+              await load();
+            } catch (e) {
+              Alert.alert('İşlem başarısız', 'Engelleme güncellenemedi. Bağlantını kontrol edip tekrar dene.');
+            }
+          },
+        },
+      ],
+    );
   };
 
   const onReport = async (reason) => {
