@@ -191,12 +191,22 @@ exports.repairMyUsernameIndex = onCall({ region: 'us-central1' }, async (request
 // Kullanıcı adıyla şifre yenileme. E-posta istemciye hiç dönmez; kullanıcı
 // bulunamadığında da aynı başarı yanıtı verilir ki hesap varlığı anlaşılmasın.
 exports.sendPasswordResetForUsername = onCall({ region: 'us-central1' }, async (request) => {
-  const username = normalizeUsername(request.data?.username);
-  if (username.length < 3 || username.includes('@')) return { ok: true };
+  const rawInput = String(request.data?.username || '').trim();
+  if (rawInput.length < 3) return { ok: true };
+  const isEmail = rawInput.includes('@');
 
   try {
-    const found = await getUserByUsername(username);
-    const email = found?.id ? await getPrivateEmail(found.id, found.email) : null;
+    let email = null;
+    if (isEmail) {
+      // Kullanıcı e-posta yazdıysa doğrudan ona sıfırlama gönder (format geçerliyse).
+      const candidate = rawInput.toLowerCase();
+      if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(candidate)) email = candidate;
+    } else {
+      const found = await getUserByUsername(normalizeUsername(rawInput));
+      email = found?.id ? await getPrivateEmail(found.id, found.email) : null;
+    }
+    // Teşhis: e-posta değeri LOGLANMAZ, sadece hangi dal + sonuç.
+    console.log('[passwordReset] lookup', { via: isEmail ? 'email' : 'username', hasEmail: !!email });
     if (!email) return { ok: true };
 
     const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${WEB_API_KEY}`, {
@@ -208,6 +218,8 @@ exports.sendPasswordResetForUsername = onCall({ region: 'us-central1' }, async (
       let details = '';
       try { details = await response.text(); } catch (e) {}
       console.warn('[passwordReset] request failed', response.status, details);
+    } else {
+      console.log('[passwordReset] sendOobCode ok', response.status);
     }
   } catch (e) {
     console.warn('[passwordReset] lookup failed', e?.code || e?.message);

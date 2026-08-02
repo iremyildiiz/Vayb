@@ -6,15 +6,10 @@
     "orientation": "portrait",
     "icon": "./assets/vayb-icon-clean.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/vayb-splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FF7A5C"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.iremyildiz.vaybapp",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -38,6 +33,19 @@
       "favicon": "./assets/vayb-icon-clean.png"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/vayb-splash-mark-transparent.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FF7A5C",
+          "imageWidth": 220,
+          "dark": {
+            "image": "./assets/vayb-splash-mark-transparent.png",
+            "backgroundColor": "#FF7A5C"
+          }
+        }
+      ],
       "expo-font",
       [
         "expo-image-picker",

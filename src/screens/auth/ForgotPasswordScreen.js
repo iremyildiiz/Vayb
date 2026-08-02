@@ -39,9 +39,9 @@ export default function ForgotPasswordScreen({ navigation }) {
           </Pressable>
           <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.display, color: colors.textPrimary, marginBottom: spacing.xs }}>Şifreni yenile</Text>
           <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, lineHeight: 21, marginBottom: spacing.xxl }}>
-            Kullanıcı adını yaz. Hesabın varsa kayıtlı e-posta adresine şifre yenileme bağlantısı göndeririz.
+            Kullanıcı adını ya da e-postanı yaz. Hesabın varsa şifre yenileme bağlantısı göndeririz.
           </Text>
-          <TextField label="Kullanıcı adı" value={username} onChangeText={(value) => { setUsername(value); setSent(false); }} placeholder="kullaniciadi" autoComplete="username" icon="at-outline" />
+          <TextField label="Kullanıcı adı veya e-posta" value={username} onChangeText={(value) => { setUsername(value); setSent(false); }} placeholder="kullaniciadi veya e-posta" autoCapitalize="none" autoComplete="username" icon="at-outline" />
           {sent ? <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, lineHeight: 21, marginBottom: spacing.lg }}>Hesap bilgileri eşleşiyorsa şifre yenileme bağlantısı gönderildi. Gelen kutunu ve spam klasörünü kontrol et.</Text> : null}
           <GradientButton label="Bağlantı gönder" onPress={submit} loading={loading} disabled={username.trim().length < 3} />
         </ScrollView>
