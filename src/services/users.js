@@ -137,7 +137,8 @@ export async function getUserProfile(uid) {
 // createdAt'e göre istemci tarafında sıralanır. (Ölçek büyürse orderBy+index+sayfalama.)
 export async function getUserPosts(uid) {
   const snap = await getDocs(query(collection(db, 'posts'), where('authorUid', '==', uid)));
-  const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // Arşivlenen anlar profilde görünmez (sahibi arşivden geri alınca yeniden çıkar).
+  const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => p.archived !== true);
   posts.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
   return posts;
 }

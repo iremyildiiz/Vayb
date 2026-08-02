@@ -23,7 +23,7 @@ import MoodTraceIcon from '../components/MoodTraceIcon';
 import SavedMemoryIcon from '../components/SavedMemoryIcon';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { deletePost, getPost } from '../services/posts';
+import { deletePost, getPost, setPostArchived } from '../services/posts';
 import { getUserProfile } from '../services/users';
 import {
   REACTIONS,
@@ -61,6 +61,7 @@ export default function PostDetailScreen({ navigation, route }) {
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [modOpen, setModOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
 
   const scale = useRef(new Animated.Value(1)).current;
   const sparkleScale = useRef(new Animated.Value(0.4)).current;
@@ -224,6 +225,21 @@ export default function PostDetailScreen({ navigation, route }) {
     );
   };
 
+  const onArchive = async () => {
+    if (!post?.id || archiving || deleting) return;
+    const willArchive = !post.archived;
+    setArchiving(true);
+    try {
+      await setPostArchived(post.id, willArchive);
+      setPost((prev) => ({ ...prev, archived: willArchive }));
+      setOptionsOpen(false);
+      navigation.goBack(); // profil/arşiv ekranı odakta yeniden yüklenir
+    } catch (e) {
+      console.warn('[postDetail] arşivlenemedi:', e?.code || e?.message);
+      setArchiving(false);
+    }
+  };
+
   const initial = (author?.username || author?.displayName || post?.authorName || '?').trim().charAt(0).toUpperCase() || '?';
   const imageRatio = post?.imageWidth && post?.imageHeight ? post.imageWidth / post.imageHeight : 4 / 5;
   const imageHeight = Math.min(width / Math.max(imageRatio, 0.55), width * 1.45);
@@ -276,7 +292,7 @@ export default function PostDetailScreen({ navigation, route }) {
             </Text>
           </Pressable>
           {post.authorUid === user?.uid ? (
-            <Pressable onPress={() => setOptionsOpen(true)} disabled={deleting} hitSlop={8} style={{ marginLeft: spacing.sm, opacity: deleting ? 0.45 : 1 }}>
+            <Pressable onPress={() => setOptionsOpen(true)} disabled={deleting || archiving} hitSlop={8} style={{ marginLeft: spacing.sm, opacity: deleting || archiving ? 0.45 : 1 }}>
               <Ionicons name="ellipsis-horizontal" size={22} color={colors.textMuted} />
             </Pressable>
           ) : (
@@ -426,7 +442,15 @@ export default function PostDetailScreen({ navigation, route }) {
           </Pressable>
         </Pressable>
       </Modal>
-      <PostOptionsSheet visible={optionsOpen} onClose={() => setOptionsOpen(false)} onDelete={onDelete} deleting={deleting} />
+      <PostOptionsSheet
+        visible={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        onDelete={onDelete}
+        deleting={deleting}
+        onArchive={onArchive}
+        archiving={archiving}
+        archived={!!post.archived}
+      />
       <ModerationSheet
         visible={modOpen}
         onClose={() => setModOpen(false)}

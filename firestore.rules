@@ -48,6 +48,11 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pariltiCount'])
         && counterStep('pariltiCount');
     }
+    // posts: sahibi yalnızca archived/archivedAt alanlarını mı değiştiriyor?
+    function archiveOnlyUpdate() {
+      return resource.data.authorUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['archived', 'archivedAt']);
+    }
 
     match /users/{uid} {
       allow read: if signedIn();
@@ -77,8 +82,9 @@ service cloud.firestore {
     match /posts/{postId} {
       allow read: if signedIn();
       allow create: if verified() && request.resource.data.authorUid == request.auth.uid;
-      // Yalnızca DOĞRULANMIŞ kullanıcı pariltiCount'u ±1 değiştirebilir (parlat/geri al).
-      allow update: if verified() && pariltiOnlyUpdate();
+      // Doğrulanmış kullanıcı pariltiCount'u ±1 değiştirebilir (parlat/geri al);
+      // ayrıca sahibi anısını arşivleyebilir/geri alabilir (archived/archivedAt).
+      allow update: if verified() && (pariltiOnlyUpdate() || archiveOnlyUpdate());
       allow delete: if signedIn() && resource.data.authorUid == request.auth.uid;
     }
 

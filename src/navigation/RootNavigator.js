@@ -16,6 +16,7 @@ import PostDetailScreen from '../screens/PostDetailScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import AccountSettingsScreen from '../screens/AccountSettingsScreen';
 import SelectedPostsScreen from '../screens/SelectedPostsScreen';
+import ArchivedPostsScreen from '../screens/ArchivedPostsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import ReactionDetailScreen from '../screens/ReactionDetailScreen';
 import PariltiDetailScreen from '../screens/PariltiDetailScreen';
@@ -81,6 +82,7 @@ export default function RootNavigator() {
             <Stack.Screen name="Terms" component={LegalScreen} initialParams={{ kind: 'terms' }} />
             <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
             <Stack.Screen name="SelectedPosts" component={SelectedPostsScreen} />
+            <Stack.Screen name="ArchivedPosts" component={ArchivedPostsScreen} />
           </Stack.Group>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />

@@ -105,6 +105,7 @@ export default function SettingsDrawer({ visible, onClose }) {
             <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.xs }} />
 
             <Row iconNode={<SavedMemoryIcon size={20} color={colors.textMuted} />} label="Seçtiklerim" onPress={() => { onClose?.(); navigation.navigate('SelectedPosts'); }} />
+            <Row icon="archive-outline" label="Arşivim" onPress={() => { onClose?.(); navigation.navigate('ArchivedPosts'); }} />
             <Row icon="ban-outline" label="Engellediklerim" onPress={() => { onClose?.(); navigation.navigate('BlockedUsers'); }} />
             <Row icon="settings-outline" label="Ayarlar" onPress={() => { onClose?.(); navigation.navigate('Settings'); }} />
 

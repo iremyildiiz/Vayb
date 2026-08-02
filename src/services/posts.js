@@ -12,6 +12,7 @@ import {
   query,
   where,
   serverTimestamp,
+  updateDoc,
   writeBatch,
 } from 'firebase/firestore';
 import { auth, db, storage } from './firebase';
@@ -91,6 +92,35 @@ export async function createPost({ uri, caption, locationName, width, height }) 
 export async function getPost(postId) {
   const snap = await getDoc(doc(db, 'posts', postId));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+// Arşivle / arşivden çıkar. Sahibi anısını SİLMEDEN gizleyebilir: arşivdeki anı
+// profilde, akışlarda ve "Seçtiklerim"de görünmez; istenince geri alınır.
+export async function setPostArchived(postId, archived) {
+  const user = auth.currentUser;
+  if (!user) throw new Error('Oturum yok.');
+  const postRef = doc(db, 'posts', postId);
+  const postSnap = await getDoc(postRef);
+  if (!postSnap.exists()) return;
+  if (postSnap.data().authorUid !== user.uid) throw new Error('Bu anı yalnızca sahibi arşivleyebilir.');
+  await updateDoc(postRef, {
+    archived: !!archived,
+    archivedAt: archived ? serverTimestamp() : null,
+  });
+}
+
+// Yalnızca giriş yapan kullanıcının arşivlediği anlar. Eşitlik where'i + istemci
+// filtre/sıralama → kompozit index gerekmez (getUserPosts ile aynı desen).
+export async function getArchivedPosts() {
+  const user = auth.currentUser;
+  if (!user) return [];
+  const snap = await getDocs(query(collection(db, 'posts'), where('authorUid', '==', user.uid)));
+  const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => p.archived === true);
+  posts.sort((a, b) => (
+    (b.archivedAt?.toMillis?.() || b.createdAt?.toMillis?.() || 0)
+    - (a.archivedAt?.toMillis?.() || a.createdAt?.toMillis?.() || 0)
+  ));
+  return posts;
 }
 
 export async function deletePost(postId) {

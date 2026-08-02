@@ -62,7 +62,7 @@ export async function getSavedPosts(pageSize = 60) {
   for (const data of saves) {
     try {
       const post = await getPost(data.postId);
-      if (post) posts.push(post);
+      if (post && post.archived !== true) posts.push(post); // arşivlenen anı gösterme
     } catch (e) {
       /* silinmiş/erişilemeyen post sessizce düşer */
     }

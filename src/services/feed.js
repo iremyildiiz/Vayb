@@ -22,7 +22,8 @@ export async function getFeedPosts({ followingUids, pageSize = 10, lastDoc = nul
 
   const snap = await getDocs(query(collection(db, 'posts'), ...constraints));
   const blocked = await getBlockedSet();
-  const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((p) => !blocked.has(p.authorUid));
+  const posts = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    .filter((p) => !blocked.has(p.authorUid) && p.archived !== true);
   const newLastDoc = snap.docs.length ? snap.docs[snap.docs.length - 1] : null;
   return { posts, lastDoc: newLastDoc, empty: false };
 }
@@ -61,6 +62,7 @@ export async function getExplorePosts(pageSize = 20, lastDoc = null) {
   for (const d of raw) {
     const data = { id: d.id, ...d.data() };
     if (data.authorUid === me) continue; // kendi postlarını Keşfet'te gösterme
+    if (data.archived === true) continue; // arşivlenen anlar Keşfet'te görünmez
     if (blocked.has(data.authorUid)) continue; // engellediklerim görünmesin
     if (await isAuthorPublic(data.authorUid)) posts.push(data);
   }

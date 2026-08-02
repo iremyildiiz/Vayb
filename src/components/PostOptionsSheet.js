@@ -4,10 +4,12 @@ import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 
-export default function PostOptionsSheet({ visible, onClose, onDelete, deleting }) {
+export default function PostOptionsSheet({ visible, onClose, onDelete, deleting, onArchive, archiving, archived }) {
   const { theme } = useTheme();
   const { colors, typography, spacing, radius } = theme;
   if (!visible) return null;
+
+  const busy = deleting || archiving;
 
   return (
     <View
@@ -39,12 +41,37 @@ export default function PostOptionsSheet({ visible, onClose, onDelete, deleting 
           Bu an
         </Text>
         <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, lineHeight: 17, marginBottom: spacing.md }}>
-          Profilinden ve akışlardan kaldırılır.
+          {archived
+            ? 'Arşivden çıkarınca profilinde yeniden görünür.'
+            : 'Arşivlersen profilinden gizlenir, istediğinde geri alırsın. Silmek kalıcıdır.'}
         </Text>
+
+        {onArchive ? (
+          <Pressable
+            onPress={onArchive}
+            disabled={busy}
+            style={({ pressed }) => ({
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: radius.input,
+              paddingVertical: spacing.md,
+              paddingHorizontal: spacing.md,
+              marginBottom: spacing.sm,
+              opacity: pressed || busy ? 0.55 : 1,
+            })}
+          >
+            {archiving ? <ActivityIndicator color={colors.textMuted} /> : <Ionicons name={archived ? 'arrow-undo-outline' : 'archive-outline'} size={20} color={colors.textMuted} />}
+            <Text style={{ marginLeft: spacing.md, fontFamily: typography.fontBodyMedium, fontSize: typography.size.body, color: colors.textPrimary }}>
+              {archiving ? (archived ? 'Geri alınıyor...' : 'Arşivleniyor...') : archived ? 'Profilime geri koy' : 'Arşivle'}
+            </Text>
+          </Pressable>
+        ) : null}
 
         <Pressable
           onPress={onDelete}
-          disabled={deleting}
+          disabled={busy}
           style={({ pressed }) => ({
             flexDirection: 'row',
             alignItems: 'center',
@@ -53,7 +80,7 @@ export default function PostOptionsSheet({ visible, onClose, onDelete, deleting 
             borderRadius: radius.input,
             paddingVertical: spacing.md,
             paddingHorizontal: spacing.md,
-            opacity: pressed || deleting ? 0.55 : 1,
+            opacity: pressed || busy ? 0.55 : 1,
           })}
         >
           {deleting ? <ActivityIndicator color={colors.textMuted} /> : <Ionicons name="remove-circle-outline" size={20} color={colors.textMuted} />}
@@ -62,7 +89,7 @@ export default function PostOptionsSheet({ visible, onClose, onDelete, deleting 
           </Text>
         </Pressable>
 
-        <Pressable onPress={onClose} disabled={deleting} style={({ pressed }) => ({ alignItems: 'center', paddingVertical: spacing.md, opacity: pressed ? 0.6 : 1 })}>
+        <Pressable onPress={onClose} disabled={busy} style={({ pressed }) => ({ alignItems: 'center', paddingVertical: spacing.md, opacity: pressed ? 0.6 : 1 })}>
           <Text style={{ fontFamily: typography.fontBodyMedium, fontSize: typography.size.footnote, color: colors.textMuted }}>
             Vazgeç
           </Text>
