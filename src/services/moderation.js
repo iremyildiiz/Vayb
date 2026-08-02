@@ -22,9 +22,22 @@ export async function getBlockedUids() {
   return snap.docs.map((d) => d.data().blockedUid).filter(Boolean);
 }
 
+// Akış/Vaybla filtresi için ÇİFT YÖNLÜ engel kümesi: benim engellediklerim +
+// beni engelleyenler. Böylece beni engelleyenin gönderileri akışımda görünmez,
+// benim engellediğime de benim gönderilerim görünmez (o da bu kümeyi kullanır).
+// (getBlockedUids tek yönlü kalır → "Engellediklerim" listesi etkilenmez.)
 export async function getBlockedSet() {
   if (blockedCache) return blockedCache;
-  blockedCache = new Set(await getBlockedUids());
+  const me = auth.currentUser?.uid;
+  if (!me) return new Set();
+  const [outSnap, inSnap] = await Promise.all([
+    getDocs(query(collection(db, 'blocks'), where('blockerUid', '==', me))),
+    getDocs(query(collection(db, 'blocks'), where('blockedUid', '==', me))),
+  ]);
+  blockedCache = new Set([
+    ...outSnap.docs.map((d) => d.data().blockedUid),
+    ...inSnap.docs.map((d) => d.data().blockerUid),
+  ].filter(Boolean));
   return blockedCache;
 }
 
