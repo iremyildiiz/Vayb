@@ -16,6 +16,8 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { auth, db, storage } from './firebase';
+import { getBlockedSet } from './moderation';
+import { locationKey } from '../utils/location';
 
 // Yerel dosyayı gerçek bir RN blob'una çevir (XHR). uploadString/base64 RN'de
 // "Creating blobs from ArrayBuffer" hatası verdiği için bu yol gerekli.
@@ -79,7 +81,9 @@ export async function createPost({ uri, caption, locationName, width, height }) 
     imageWidth: width || null,
     imageHeight: height || null,
     caption: (caption || '').trim(),
-    location: locationName?.trim() ? { name: locationName.trim(), lat: null, lng: null } : null,
+    location: locationName?.trim()
+      ? { name: locationName.trim(), key: locationKey(locationName), lat: null, lng: null }
+      : null,
     createdAt: serverTimestamp(),
     pariltiCount: 0, // "parıltı" sayacı (beğeni değil)
   };
@@ -92,6 +96,36 @@ export async function createPost({ uri, caption, locationName, width, height }) 
 export async function getPost(postId) {
   const snap = await getDoc(doc(db, 'posts', postId));
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+}
+
+// Bir konumdaki (location.key eşit) tüm gönderiler — konum sayfası için.
+// Eşitlik where'i (kompozit index gerekmez) + istemci filtre/sıralama.
+// Arşivli, engelli ve gizli hesap gönderileri elenir (kendi hariç).
+export async function getPostsByLocationKey(key) {
+  const me = auth.currentUser?.uid;
+  if (!key) return [];
+  const snap = await getDocs(query(collection(db, 'posts'), where('location.key', '==', key)));
+  const blocked = await getBlockedSet();
+  const rows = snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter((p) => p.archived !== true && !blocked.has(p.authorUid));
+
+  const pubCache = new Map();
+  const out = [];
+  for (const p of rows) {
+    if (p.authorUid === me) { out.push(p); continue; }
+    let pub = pubCache.get(p.authorUid);
+    if (pub === undefined) {
+      try {
+        const s = await getDoc(doc(db, 'users', p.authorUid));
+        pub = !(s.exists() && s.data().isPrivate === true);
+      } catch (e) { pub = true; }
+      pubCache.set(p.authorUid, pub);
+    }
+    if (pub) out.push(p);
+  }
+  out.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  return out;
 }
 
 // Arşivle / arşivden çıkar. Sahibi anısını SİLMEDEN gizleyebilir: arşivdeki anı

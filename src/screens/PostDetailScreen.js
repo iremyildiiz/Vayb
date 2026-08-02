@@ -24,6 +24,7 @@ import SavedMemoryIcon from '../components/SavedMemoryIcon';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { deletePost, getPost, setPostArchived } from '../services/posts';
+import { shortPlace, locationKey } from '../utils/location';
 import { getUserProfile } from '../services/users';
 import {
   REACTIONS,
@@ -405,12 +406,16 @@ export default function PostDetailScreen({ navigation, route }) {
           ) : null}
 
           {post.location?.name ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm }}>
-              <Ionicons name="location-outline" size={14} color={colors.textMuted} />
+            <Pressable
+              onPress={() => navigation.navigate('LocationPosts', { name: shortPlace(post.location.name), key: post.location.key || locationKey(post.location.name) })}
+              style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.sm }}
+              hitSlop={4}
+            >
+              <Ionicons name="location-outline" size={14} color={colors.accent} />
               <Text numberOfLines={1} style={{ marginLeft: 4, fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted }}>
-                {String(post.location.name).split(',')[0].trim()}
+                {shortPlace(post.location.name)}
               </Text>
-            </View>
+            </Pressable>
           ) : null}
 
           <View style={{ height: 1, backgroundColor: colors.border, marginVertical: spacing.lg }} />

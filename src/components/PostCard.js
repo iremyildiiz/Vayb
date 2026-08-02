@@ -11,6 +11,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { shortPlace, locationKey } from '../utils/location';
 import PostOptionsSheet from './PostOptionsSheet';
 import MoodTraceIcon from './MoodTraceIcon';
 import SavedMemoryIcon from './SavedMemoryIcon';
@@ -373,12 +374,16 @@ export default function PostCard({ post }) {
 
         {/* Konum */}
         {post.location?.name ? (
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs }}>
-            <Ionicons name="location-outline" size={14} color={colors.textMuted} />
+          <Pressable
+            onPress={() => navigation.navigate('LocationPosts', { name: shortPlace(post.location.name), key: post.location.key || locationKey(post.location.name) })}
+            style={{ flexDirection: 'row', alignItems: 'center', marginTop: spacing.xs }}
+            hitSlop={4}
+          >
+            <Ionicons name="location-outline" size={14} color={colors.accent} />
             <Text numberOfLines={1} style={{ marginLeft: 4, fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted }}>
-              {String(post.location.name).split(',')[0].trim()}
+              {shortPlace(post.location.name)}
             </Text>
-          </View>
+          </Pressable>
         ) : null}
 
         {/* Tepki özeti — liste ayrı ekranda açılır */}

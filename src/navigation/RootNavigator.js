@@ -17,6 +17,7 @@ import SettingsScreen from '../screens/SettingsScreen';
 import AccountSettingsScreen from '../screens/AccountSettingsScreen';
 import SelectedPostsScreen from '../screens/SelectedPostsScreen';
 import ArchivedPostsScreen from '../screens/ArchivedPostsScreen';
+import LocationPostsScreen from '../screens/LocationPostsScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import ReactionDetailScreen from '../screens/ReactionDetailScreen';
 import PariltiDetailScreen from '../screens/PariltiDetailScreen';
@@ -83,6 +84,7 @@ export default function RootNavigator() {
             <Stack.Screen name="BlockedUsers" component={BlockedUsersScreen} />
             <Stack.Screen name="SelectedPosts" component={SelectedPostsScreen} />
             <Stack.Screen name="ArchivedPosts" component={ArchivedPostsScreen} />
+            <Stack.Screen name="LocationPosts" component={LocationPostsScreen} />
           </Stack.Group>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />
