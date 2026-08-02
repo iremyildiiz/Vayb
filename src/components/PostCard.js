@@ -395,7 +395,7 @@ export default function PostCard({ post }) {
           >
             <MoodTraceIcon size={14} color={colors.textMuted} />
             <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, marginLeft: 4 }}>
-              {reactionCount} his izi
+              {reactionCount} vayb
             </Text>
           </Pressable>
         ) : null}

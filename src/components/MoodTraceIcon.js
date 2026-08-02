@@ -1,4 +1,4 @@
-// MoodTraceIcon — his izi için ücretsiz, spiralli iz ikonu.
+// MoodTraceIcon — "vayb" (kısa duygu tepkisi) için spiralli iz ikonu.
 
 import { View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';

@@ -1,4 +1,4 @@
-// ReactionDetailScreen — bir gönderinin his izlerini tek merkezde gösterir.
+// ReactionDetailScreen — bir gönderinin vayblarını tek merkezde gösterir.
 
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, Pressable, ScrollView, ActivityIndicator } from 'react-native';
@@ -70,7 +70,7 @@ export default function ReactionDetailScreen({ navigation, route }) {
           <Ionicons name="chevron-back" size={26} color={colors.textPrimary} />
         </Pressable>
         <Text style={{ flex: 1, textAlign: 'center', fontFamily: typography.fontBodyMedium, fontSize: typography.size.body, color: colors.textPrimary }}>
-          His İzleri
+          Bu anın Vaybı
         </Text>
         <View style={{ width: 26 }} />
       </View>
@@ -82,7 +82,7 @@ export default function ReactionDetailScreen({ navigation, route }) {
       ) : rows.length ? (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl }}>
           <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginBottom: spacing.md }}>
-            {rows.length} his izi
+            {rows.length} vayb
           </Text>
           <View style={{ gap: spacing.md }}>
             {rows.map((row) => {
@@ -106,7 +106,7 @@ export default function ReactionDetailScreen({ navigation, route }) {
                       {displayUser(row)}
                     </Text>
                     <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, marginTop: 2 }}>
-                      {row.reaction}
+                      anın Vaybı {row.reaction}
                     </Text>
                   </View>
                 </Pressable>
@@ -118,7 +118,7 @@ export default function ReactionDetailScreen({ navigation, route }) {
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.xl }}>
           <MoodTraceIcon size={42} color={colors.textMuted} />
           <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginTop: spacing.sm }}>
-            Henüz his izi yok.
+            Henüz vayb yok.
           </Text>
         </View>
       )}

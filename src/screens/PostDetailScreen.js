@@ -356,7 +356,7 @@ export default function PostDetailScreen({ navigation, route }) {
 
             <Pressable
               onPress={() => setShowChips((s) => !s)}
-              accessibilityLabel={myReaction ? `His: ${myReaction}` : 'His seç'}
+              accessibilityLabel={myReaction ? `Vayb: ${myReaction}` : 'Vayb seç'}
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -374,7 +374,11 @@ export default function PostDetailScreen({ navigation, route }) {
           </View>
 
           {showChips ? (
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: spacing.md, gap: spacing.xs }}>
+            <View style={{ marginTop: spacing.md }}>
+              <Text style={{ fontFamily: typography.fontBodyMedium, fontSize: typography.size.footnote, color: colors.textPrimary, marginBottom: spacing.sm }}>
+                Bu anın vaybı ne?
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs }}>
               {REACTIONS.map((word) => {
                 const selected = myReaction === word;
                 return (
@@ -396,6 +400,7 @@ export default function PostDetailScreen({ navigation, route }) {
                   </Pressable>
                 );
               })}
+              </View>
             </View>
           ) : null}
 
@@ -428,12 +433,12 @@ export default function PostDetailScreen({ navigation, route }) {
             >
               <MoodTraceIcon size={15} color={colors.textMuted} />
               <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginLeft: 5 }}>
-                {reactionCount} his izi
+                {reactionCount} vayb
               </Text>
             </Pressable>
           ) : (
             <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted }}>
-              Henüz his izi yok.
+              Henüz vayb yok.
             </Text>
           )}
         </View>

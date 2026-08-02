@@ -15,8 +15,9 @@ import { createNotification } from './notifications';
 
 const idOf = (postId, uid) => `${postId}_${uid}`;
 
-// Atmosfer kelimeleri — TAM liste, değiştirme.
-export const REACTIONS = ['huzurlu', 'içim açıldı', 'nostalji', 'büyüleyici', 'özledim', 'dingin'];
+// Vayb kelimeleri — kullanıcıya "vayb" olarak görünür (kısa atmosfer sözcükleri).
+// Not: bu değerler Firestore'da reaction alanının DEĞERİdir (alan adı değişmez).
+export const REACTIONS = ['Sakin', 'Sıcak', 'Nostaljik', 'Özgür', 'Huzurlu', 'Büyüleyici'];
 
 // --- Parıltı ---
 export async function getMyParilti(postId, uid) {

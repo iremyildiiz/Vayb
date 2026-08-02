@@ -1,4 +1,4 @@
-// NotificationsScreen — takip istekleri + parıltı + his tek merkez.
+// NotificationsScreen — takip istekleri + parıltı + vayb tek merkez.
 
 import { useCallback, useState } from 'react';
 import { View, Text, Image, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
@@ -110,7 +110,7 @@ export default function NotificationsScreen({ navigation }) {
     const isBusy = busy === item.fromUid;
     const name = displayName(item.profile);
     let text = `${name} anını parlattı`;
-    if (item.kind === 'reaction') text = `${name} anına "${item.reaction}" bıraktı`;
+    if (item.kind === 'reaction') text = `${name} anına "${item.reaction}" vaybı bıraktı`;
     if (item.kind === 'follow_request') text = `${name} Vaybına katılmak istiyor`;
 
     return (
