@@ -22,7 +22,6 @@ import { useAuth } from '../context/AuthContext';
 import { createOrGetConversation, markConversationRead, sendMessage, setTyping, subscribeConversation, subscribeMessages } from '../services/chats';
 import { getUserProfile } from '../services/users';
 import { isBlocked, isBlockedEitherWay, blockUser, unblockUser, reportUser } from '../services/moderation';
-import SeenSparkIcon from '../components/SeenSparkIcon';
 
 function displayUser(info) {
   if (!info) return 'vayb kullanıcısı';
@@ -195,7 +194,9 @@ export default function ChatScreen({ navigation, route }) {
 
   const initial = displayUser(other).trim().charAt(0).toUpperCase() || '?';
   // Görüldü hesabı: karşı tarafın en son okuma anı, benim son mesajımı kapsıyor mu.
-  const otherReadMs = otherUid ? (conv?.readAt?.[otherUid]?.toMillis?.() || 0) : 0;
+  const otherReadTs = otherUid ? conv?.readAt?.[otherUid] : null;
+  const otherReadMs = otherReadTs?.toMillis?.() || 0;
+  const seenTime = messageTime(otherReadTs); // "kaçta görüldü"
   const myMsgs = messages.filter((m) => m.senderUid === user.uid);
   const lastMineId = myMsgs.length ? myMsgs[myMsgs.length - 1].id : null;
 
@@ -269,12 +270,24 @@ export default function ChatScreen({ navigation, route }) {
                       </Text>
                     ) : null}
                     {isLastMine ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, marginHorizontal: spacing.xs }}>
-                        <SeenSparkIcon seen={seen} accent={sunset.orange} muted={colors.textMuted} size={12} />
-                        <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: seen ? sunset.orange : colors.textMuted, marginLeft: 4 }}>
-                          {seen ? 'Görüldü' : 'İletildi'}
+                      seen ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, marginHorizontal: spacing.xs }}>
+                          {other?.photoURL ? (
+                            <Image source={{ uri: other.photoURL }} style={{ width: 15, height: 15, borderRadius: radius.pill }} />
+                          ) : (
+                            <LinearGradient colors={gradients.sunset} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 15, height: 15, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' }}>
+                              <Text style={{ fontFamily: typography.fontDisplay, fontSize: 8, color: '#FFFFFF' }}>{initial}</Text>
+                            </LinearGradient>
+                          )}
+                          <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, marginLeft: 4 }}>
+                            {seenTime ? `Görüldü ${seenTime}` : 'Görüldü'}
+                          </Text>
+                        </View>
+                      ) : (
+                        <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, marginTop: 3, marginHorizontal: spacing.xs }}>
+                          İletildi
                         </Text>
-                      </View>
+                      )
                     ) : null}
                   </View>
                 );
