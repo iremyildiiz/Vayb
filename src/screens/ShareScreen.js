@@ -23,6 +23,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
+import ImageCropPicker from 'react-native-image-crop-picker';
 import Screen from '../components/Screen';
 import GradientButton from '../components/GradientButton';
 import { useTheme } from '../context/ThemeContext';
@@ -281,6 +282,52 @@ export default function ShareScreen({ navigation }) {
     if (perm?.granted) loadAssets(true);
   };
 
+  // Native kırpıcı: seçili foto için Apple kesme editörü (kaydır + yakınlaştır + oran).
+  const openCrop = useCallback(async (option) => {
+    if (!selected) return;
+    try {
+      let path = selected.localUri;
+      if ((!path || !path.startsWith('file')) && selected.raw) {
+        const info = await MediaLibrary.getAssetInfoAsync(selected.raw);
+        path = info.localUri;
+      }
+      if (!path || !path.startsWith('file')) {
+        Alert.alert('Fotoğraf hazırlanamadı', 'Fotoğraf iCloud’da olabilir; indirilmesini bekleyip tekrar dene.');
+        return;
+      }
+      const opts = {
+        path,
+        cropping: true,
+        freeStyleCropEnabled: !option.aspect, // Serbest: serbest kes; oranlı: kilitli
+        mediaType: 'photo',
+        compressImageQuality: 0.92,
+        cropperToolbarTitle: 'Kırp',
+        cropperActiveWidgetColor: '#FF7A5C',
+        cropperChooseColor: '#FF7A5C',
+      };
+      if (option.aspect) {
+        const [aw, ah] = option.aspect;
+        const s = 1440 / Math.max(aw, ah);
+        opts.width = Math.round(aw * s);
+        opts.height = Math.round(ah * s);
+      }
+      const img = await ImageCropPicker.openCropper(opts);
+      setSelected((prev) => (prev ? {
+        ...prev,
+        uri: img.path,
+        localUri: img.path,
+        width: img.width,
+        height: img.height,
+        raw: null, // artık kırpılmış dosya
+      } : prev));
+      setCropKey(option.key);
+    } catch (e) {
+      if (e?.code !== 'E_PICKER_CANCELLED') {
+        console.warn('[crop] kırpılamadı:', e?.code || e?.message);
+      }
+    }
+  }, [selected]);
+
   const handleShare = async () => {
     if (!selected || uploading) return;
     setUploading(true);
@@ -294,10 +341,8 @@ export default function ShareScreen({ navigation }) {
       if (!uploadUri || !uploadUri.startsWith('file')) {
         throw new Error('Fotoğraf hazırlanamadı. (Fotoğraf iCloud’da olabilir — indirilmesini bekleyip tekrar dene.)');
       }
-      const crop = CROP_OPTIONS.find((o) => o.key === cropKey);
-      const postWidth = crop?.aspect ? crop.aspect[0] : selected.width;
-      const postHeight = crop?.aspect ? crop.aspect[1] : selected.height;
-      await createPost({ uri: uploadUri, caption, locationName, width: postWidth, height: postHeight });
+      // Görsel kırpıldıysa selected.width/height kırpılmış boyuttur; yoksa orijinal.
+      await createPost({ uri: uploadUri, caption, locationName, width: selected.width, height: selected.height });
       // Paylaşım sonrası profile yönlendir (yeni an orada görünür).
       reset();
       navigation.navigate('Main', { screen: 'Profile' });
@@ -558,7 +603,7 @@ export default function ShareScreen({ navigation }) {
             {CROP_OPTIONS.map((option) => (
               <Pressable
                 key={option.key}
-                onPress={() => setCropKey(option.key)}
+                onPress={() => openCrop(option)}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',

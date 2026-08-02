@@ -44,6 +44,34 @@ async function isAuthorPublic(uid) {
   return pub;
 }
 
+// Aynı yazarın gönderilerini arka arkaya koymadan dağıt (Instagram Keşfet hissi).
+// Yazarları döngüsel seçer; her adımda son eklenenden farklı, en çok gönderisi
+// kalan yazarı tercih eder. Kesin kronolojiyi bozar — Keşfet için istenen budur.
+function spreadByAuthor(posts) {
+  const buckets = new Map();
+  for (const p of posts) {
+    if (!buckets.has(p.authorUid)) buckets.set(p.authorUid, []);
+    buckets.get(p.authorUid).push(p);
+  }
+  const lists = [...buckets.values()];
+  const out = [];
+  let last = null;
+  while (out.length < posts.length) {
+    let pick = null;
+    for (const list of lists) {
+      if (!list.length) continue;
+      // Mümkünse son yazarı tekrar seçme (başka seçenek varsa).
+      if (list[0].authorUid === last && lists.some((l) => l.length && l[0].authorUid !== last)) continue;
+      if (!pick || list.length > pick.length) pick = list;
+    }
+    if (!pick) break;
+    const item = pick.shift();
+    out.push(item);
+    last = item.authorUid;
+  }
+  return out;
+}
+
 // --- Keşfet / önerilen: sadece AÇIK (isPrivate=false) hesapların postları ---
 // Global kronolojik (tek alan orderBy → index yok), gizli hesaplar + kendim
 // istemcide elenir. lastDoc ham son dokümandır (sayfalama filtrelemeden bağımsız).
@@ -66,5 +94,5 @@ export async function getExplorePosts(pageSize = 20, lastDoc = null) {
     if (blocked.has(data.authorUid)) continue; // engellediklerim görünmesin
     if (await isAuthorPublic(data.authorUid)) posts.push(data);
   }
-  return { posts, lastDoc: newLastDoc };
+  return { posts: spreadByAuthor(posts), lastDoc: newLastDoc };
 }
