@@ -1,6 +1,6 @@
 // ChatScreen — birebir sade metin sohbeti.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -19,9 +19,10 @@ import Screen from '../components/Screen';
 import ModerationSheet from '../components/ModerationSheet';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { createOrGetConversation, markConversationRead, sendMessage, subscribeMessages } from '../services/chats';
+import { createOrGetConversation, markConversationRead, sendMessage, setTyping, subscribeConversation, subscribeMessages } from '../services/chats';
 import { getUserProfile } from '../services/users';
 import { isBlocked, isBlockedEitherWay, blockUser, unblockUser, reportUser } from '../services/moderation';
+import SeenSparkIcon from '../components/SeenSparkIcon';
 
 function displayUser(info) {
   if (!info) return 'vayb kullanıcısı';
@@ -50,6 +51,11 @@ export default function ChatScreen({ navigation, route }) {
   const [modOpen, setModOpen] = useState(false);
   const [iBlocked, setIBlocked] = useState(false); // ben mi engelledim
   const [blockedEither, setBlockedEither] = useState(false); // her iki yön (DM engeli)
+  const [conv, setConv] = useState(null); // sohbet dokümanı (readAt + typingAt)
+  const [otherTyping, setOtherTyping] = useState(false); // karşı taraf yazıyor mu
+  const lastTypingWriteRef = useRef(0);
+  const stopTypingTimerRef = useRef(null);
+  const typingHideTimerRef = useRef(null);
 
   const loadBlockState = useCallback(async () => {
     if (!otherUid) return;
@@ -122,6 +128,49 @@ export default function ChatScreen({ navigation, route }) {
     return unsub;
   }, [conversationId, user.uid]);
 
+  // Sohbet dokümanını dinle (Görüldü + Yazıyor bilgileri buradan gelir).
+  useEffect(() => {
+    if (!conversationId) return undefined;
+    return subscribeConversation(conversationId, (data) => setConv(data), () => {});
+  }, [conversationId]);
+
+  // Karşı tarafın "yazıyor" durumu: son 6 sn içinde typingAt güncellendiyse.
+  useEffect(() => {
+    if (!conv || !otherUid) { setOtherTyping(false); return undefined; }
+    const ms = conv.typingAt?.[otherUid]?.toMillis?.() || 0;
+    const age = Date.now() - ms;
+    clearTimeout(typingHideTimerRef.current);
+    if (ms && age < 6000) {
+      setOtherTyping(true);
+      typingHideTimerRef.current = setTimeout(() => setOtherTyping(false), 6000 - age);
+    } else {
+      setOtherTyping(false);
+    }
+    return () => clearTimeout(typingHideTimerRef.current);
+  }, [conv, otherUid]);
+
+  // Ekrandan çıkınca kendi "yazıyor" durumunu temizle.
+  useEffect(() => () => {
+    clearTimeout(stopTypingTimerRef.current);
+    if (conversationId) setTyping(conversationId, user.uid, false);
+  }, [conversationId, user.uid]);
+
+  // Yazarken periyodik "yazıyor" gönder, durunca kapat.
+  const handleChangeText = useCallback((val) => {
+    setText(val);
+    if (!conversationId || blockedEither) return;
+    const now = Date.now();
+    if (now - lastTypingWriteRef.current > 2500) {
+      lastTypingWriteRef.current = now;
+      setTyping(conversationId, user.uid, true);
+    }
+    clearTimeout(stopTypingTimerRef.current);
+    stopTypingTimerRef.current = setTimeout(() => {
+      setTyping(conversationId, user.uid, false);
+      lastTypingWriteRef.current = 0;
+    }, 3500);
+  }, [conversationId, blockedEither, user.uid]);
+
   const onSend = useCallback(async () => {
     if (!conversationId || sending || !text.trim()) return;
     if (blockedEither) {
@@ -131,6 +180,9 @@ export default function ChatScreen({ navigation, route }) {
     const next = text;
     setText('');
     setSending(true);
+    clearTimeout(stopTypingTimerRef.current);
+    lastTypingWriteRef.current = 0;
+    setTyping(conversationId, user.uid, false);
     try {
       await sendMessage(conversationId, next);
     } catch (e) {
@@ -139,9 +191,13 @@ export default function ChatScreen({ navigation, route }) {
     } finally {
       setSending(false);
     }
-  }, [conversationId, sending, text, blockedEither]);
+  }, [conversationId, sending, text, blockedEither, user.uid]);
 
   const initial = displayUser(other).trim().charAt(0).toUpperCase() || '?';
+  // Görüldü hesabı: karşı tarafın en son okuma anı, benim son mesajımı kapsıyor mu.
+  const otherReadMs = otherUid ? (conv?.readAt?.[otherUid]?.toMillis?.() || 0) : 0;
+  const myMsgs = messages.filter((m) => m.senderUid === user.uid);
+  const lastMineId = myMsgs.length ? myMsgs[myMsgs.length - 1].id : null;
 
   return (
     <Screen padded={false}>
@@ -187,6 +243,9 @@ export default function ChatScreen({ navigation, route }) {
             {messages.length ? (
               messages.map((message) => {
                 const mine = message.senderUid === user.uid;
+                const isLastMine = mine && message.id === lastMineId;
+                const createdMs = message.createdAt?.toMillis?.() || 0;
+                const seen = isLastMine && otherReadMs > 0 && createdMs > 0 && otherReadMs >= createdMs;
                 return (
                   <View key={message.id} style={{ alignItems: mine ? 'flex-end' : 'flex-start', marginBottom: spacing.sm }}>
                     <View
@@ -209,6 +268,14 @@ export default function ChatScreen({ navigation, route }) {
                         {messageTime(message.createdAt)}
                       </Text>
                     ) : null}
+                    {isLastMine ? (
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, marginHorizontal: spacing.xs }}>
+                        <SeenSparkIcon seen={seen} accent={sunset.orange} muted={colors.textMuted} size={12} />
+                        <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: seen ? sunset.orange : colors.textMuted, marginLeft: 4 }}>
+                          {seen ? 'Görüldü' : 'İletildi'}
+                        </Text>
+                      </View>
+                    ) : null}
                   </View>
                 );
               })
@@ -220,6 +287,15 @@ export default function ChatScreen({ navigation, route }) {
                 </Text>
               </View>
             )}
+            {otherTyping ? (
+              <View style={{ alignItems: 'flex-start', marginTop: spacing.xs }}>
+                <View style={{ borderRadius: radius.input, paddingVertical: spacing.sm, paddingHorizontal: spacing.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}>
+                  <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.caption, color: colors.textMuted, fontStyle: 'italic' }}>
+                    yazıyor…
+                  </Text>
+                </View>
+              </View>
+            ) : null}
           </ScrollView>
         )}
 
@@ -233,7 +309,7 @@ export default function ChatScreen({ navigation, route }) {
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.md, backgroundColor: colors.bg }}>
             <TextInput
               value={text}
-              onChangeText={setText}
+              onChangeText={handleChangeText}
               placeholder="Mesaj yaz..."
               placeholderTextColor={colors.textMuted}
               multiline

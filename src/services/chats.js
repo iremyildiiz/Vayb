@@ -116,9 +116,33 @@ export async function sendMessage(conversationId, text) {
 
 export async function markConversationRead(conversationId, uid) {
   if (!conversationId || !uid) return;
+  // readAt.{uid}: bu kullanıcının sohbeti en son gördüğü an. Karşı taraf kendi
+  // mesajlarının "Görüldü" durumunu bununla hesaplar.
   await updateDoc(doc(db, 'conversations', conversationId), {
     unreadBy: arrayRemove(uid),
+    [`readAt.${uid}`]: serverTimestamp(),
   });
+}
+
+// Sohbet dokümanını canlı dinle (readAt + typingAt değişimleri için).
+export function subscribeConversation(conversationId, onNext, onError) {
+  if (!conversationId) return () => {};
+  return onSnapshot(
+    doc(db, 'conversations', conversationId),
+    (snap) => onNext(snap.exists() ? { id: snap.id, ...snap.data() } : null),
+    onError,
+  );
+}
+
+// "Yazıyor" durumu: typingAt.{uid} damgası. Yazarken periyodik güncellenir,
+// durunca/gönderince null'a çekilir. Kritik değil → hata sessiz geçilir.
+export async function setTyping(conversationId, uid, isTyping) {
+  if (!conversationId || !uid) return;
+  try {
+    await updateDoc(doc(db, 'conversations', conversationId), {
+      [`typingAt.${uid}`]: isTyping ? serverTimestamp() : null,
+    });
+  } catch (e) { /* sessiz geç */ }
 }
 
 export async function getUnreadConversationCount(uid) {

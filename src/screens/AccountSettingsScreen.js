@@ -29,8 +29,7 @@ export default function AccountSettingsScreen({ navigation }) {
   const [changingPassword, setChangingPassword] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const handleChangePassword = async () => {
-    if (!currentPassword || newPassword.length < 6 || changingPassword) return;
+  const doChangePassword = async () => {
     setChangingPassword(true);
     try {
       await changeCurrentUserPassword(currentPassword, newPassword);
@@ -43,6 +42,22 @@ export default function AccountSettingsScreen({ navigation }) {
     } finally {
       setChangingPassword(false);
     }
+  };
+
+  const handleChangePassword = () => {
+    if (!currentPassword || newPassword.length < 6 || changingPassword) return;
+    if (newPassword === currentPassword) {
+      Alert.alert('Şifre değişmedi', 'Yeni şifre eskisiyle aynı olamaz.');
+      return;
+    }
+    Alert.alert(
+      'Şifre değiştirilsin mi?',
+      'Hesabının şifresi güncellenecek. Sonraki girişlerinde yeni şifreni kullanacaksın.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Değiştir', style: 'destructive', onPress: doChangePassword },
+      ],
+    );
   };
 
   const handleDelete = async () => {

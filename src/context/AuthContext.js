@@ -11,7 +11,6 @@ import {
   signOut as fbSignOut,
   updateProfile,
   deleteUser,
-  sendEmailVerification,
   EmailAuthProvider,
   reauthenticateWithCredential,
   verifyBeforeUpdateEmail,
@@ -113,8 +112,9 @@ export function AuthProvider({ children }) {
 
   const resendVerification = useCallback(async () => {
     if (!auth.currentUser) return;
-    auth.languageCode = 'tr'; // Türkçe doğrulama e-postası
-    await sendEmailVerification(auth.currentUser);
+    // Doğrulama e-postası @vaybapp.com'dan (Resend) gider — Firebase'in kendi maili değil.
+    const sendVerify = httpsCallable(functions, 'sendVerificationEmail');
+    await sendVerify();
   }, []);
 
   // Doğrulanmamış/yanlış e-posta girilmiş hesaplar için kurtarma yolu.
@@ -242,10 +242,10 @@ export function AuthProvider({ children }) {
       throw e;
     }
 
-    // Doğrulama e-postası (Türkçe). Başarısız olsa da kayıt geçerli kalsın.
+    // Doğrulama e-postası @vaybapp.com'dan (Resend). Başarısız olsa da kayıt geçerli kalsın.
     try {
-      auth.languageCode = 'tr';
-      await sendEmailVerification(cred.user);
+      const sendVerify = httpsCallable(functions, 'sendVerificationEmail');
+      await sendVerify();
     } catch (e) {
       console.warn('[signUp] doğrulama e-postası gönderilemedi:', e?.code || e?.message);
     }

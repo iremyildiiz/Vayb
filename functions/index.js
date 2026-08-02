@@ -32,6 +32,63 @@ function authBridgeError(code) {
   return new HttpsError('failed-precondition', code || 'AUTH_BRIDGE_FAILED');
 }
 
+// --- Kendi domaininden (@vaybapp.com) e-posta gönderimi (Resend) ---
+const MAIL_FROM = 'Vayb <noreply@vaybapp.com>';
+
+async function sendResendEmail({ to, subject, html }) {
+  const apiKey = (process.env.RESEND_API_KEY || '').trim();
+  if (!apiKey) throw new HttpsError('failed-precondition', 'RESEND_KEY_MISSING');
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from: MAIL_FROM, to: [to], subject, html }),
+  });
+  if (!res.ok) {
+    let detail = '';
+    try { detail = await res.text(); } catch (e) {}
+    console.warn('[resend] gönderim başarısız', res.status, detail);
+    throw new HttpsError('internal', `RESEND_${res.status}`);
+  }
+}
+
+// Sıcak, sade Vayb e-posta şablonu (peach vurgu #FF7A5C).
+function mailShell(title, bodyText, buttonLabel, buttonUrl) {
+  return `<!DOCTYPE html><html lang="tr"><body style="margin:0;background:#FBF7F4;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+    <div style="max-width:480px;margin:0 auto;padding:32px 24px;">
+      <div style="background:#ffffff;border-radius:16px;padding:32px 28px;border:1px solid #F0E6E0;">
+        <div style="font-size:22px;font-weight:700;color:#1A1A1A;margin-bottom:8px;">Vayb</div>
+        <h1 style="font-size:18px;color:#1A1A1A;margin:16px 0 8px;">${title}</h1>
+        <div style="font-size:14px;color:#555;line-height:22px;">${bodyText}</div>
+        <a href="${buttonUrl}" style="display:inline-block;margin-top:24px;background:#FF7A5C;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 24px;border-radius:12px;">${buttonLabel}</a>
+        <p style="font-size:12px;color:#999;line-height:18px;margin-top:24px;">Buton çalışmazsa bu bağlantıyı tarayıcına yapıştır:<br><span style="color:#FF7A5C;word-break:break-all;">${buttonUrl}</span></p>
+      </div>
+      <p style="font-size:11px;color:#B0A8A2;text-align:center;margin-top:16px;">Bu e-postayı beklemiyorsan görmezden gelebilirsin.</p>
+    </div>
+  </body></html>`;
+}
+
+// E-posta doğrulama bağlantısını Admin SDK ile üretip @vaybapp.com'dan gönderir.
+exports.sendVerificationEmail = onCall({ region: 'us-central1', secrets: ['RESEND_API_KEY'] }, async (request) => {
+  if (!request.auth) throw new HttpsError('unauthenticated', 'AUTH_REQUIRED');
+  const userRecord = await admin.auth().getUser(request.auth.uid);
+  const email = userRecord.email;
+  if (!email) throw new HttpsError('failed-precondition', 'EMAIL_NOT_FOUND');
+  if (userRecord.emailVerified) return { ok: true, alreadyVerified: true };
+
+  const link = await admin.auth().generateEmailVerificationLink(email);
+  await sendResendEmail({
+    to: email,
+    subject: 'Vayb — e-postanı doğrula',
+    html: mailShell(
+      'E-postanı doğrula',
+      'Vayb’ı kullanmaya başlamak için e-posta adresini doğrulaman gerekiyor. Aşağıdaki butona tıkla:',
+      'E-postamı doğrula',
+      link,
+    ),
+  });
+  return { ok: true };
+});
+
 async function getUserByUsername(username) {
   const usernameLower = normalizeUsername(username);
   const usernamePlain = normalizeSearchText(username);
@@ -190,7 +247,7 @@ exports.repairMyUsernameIndex = onCall({ region: 'us-central1' }, async (request
 
 // Kullanıcı adıyla şifre yenileme. E-posta istemciye hiç dönmez; kullanıcı
 // bulunamadığında da aynı başarı yanıtı verilir ki hesap varlığı anlaşılmasın.
-exports.sendPasswordResetForUsername = onCall({ region: 'us-central1' }, async (request) => {
+exports.sendPasswordResetForUsername = onCall({ region: 'us-central1', secrets: ['RESEND_API_KEY'] }, async (request) => {
   const rawInput = String(request.data?.username || '').trim();
   if (rawInput.length < 3) return { ok: true };
   const isEmail = rawInput.includes('@');
@@ -209,20 +266,21 @@ exports.sendPasswordResetForUsername = onCall({ region: 'us-central1' }, async (
     console.log('[passwordReset] lookup', { via: isEmail ? 'email' : 'username', hasEmail: !!email });
     if (!email) return { ok: true };
 
-    const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${WEB_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ requestType: 'PASSWORD_RESET', email }),
+    // Sıfırlama bağlantısını Admin SDK üretir, @vaybapp.com'dan Resend ile gönderilir.
+    const link = await admin.auth().generatePasswordResetLink(email);
+    await sendResendEmail({
+      to: email,
+      subject: 'Vayb — şifreni sıfırla',
+      html: mailShell(
+        'Şifreni sıfırla',
+        'Vayb hesabının şifresini yenilemek için aşağıdaki butona tıkla. Bu isteği sen yapmadıysan bu e-postayı yok say; şifren değişmez.',
+        'Şifremi sıfırla',
+        link,
+      ),
     });
-    if (!response.ok) {
-      let details = '';
-      try { details = await response.text(); } catch (e) {}
-      console.warn('[passwordReset] request failed', response.status, details);
-    } else {
-      console.log('[passwordReset] sendOobCode ok', response.status);
-    }
+    console.log('[passwordReset] resend ok');
   } catch (e) {
-    console.warn('[passwordReset] lookup failed', e?.code || e?.message);
+    console.warn('[passwordReset] gönderilemedi', e?.code || e?.message);
   }
 
   return { ok: true };

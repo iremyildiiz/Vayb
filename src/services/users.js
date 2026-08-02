@@ -253,7 +253,10 @@ export async function changeCurrentUserPassword(currentPassword, newPassword) {
   if (!currentPassword || newPassword.length < 6) {
     throw new Error('Şifre en az 6 karakter olmalı.');
   }
-  const user = await reauthWithPassword(currentPassword);
+  if (newPassword === currentPassword) {
+    throw new Error('Yeni şifre eskisiyle aynı olamaz.');
+  }
+  const user = await reauthWithPassword(currentPassword); // güncel şifre doğrulanır
   await updatePassword(user, newPassword);
 }
 
