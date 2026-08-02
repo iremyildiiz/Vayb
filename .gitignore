@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# yerel build çıktısı
+*.ipa
+vayb-build.ipa
