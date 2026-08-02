@@ -40,7 +40,7 @@ const COACH_STEPS = [
 
 export default function TabNavigator() {
   const { theme } = useTheme();
-  const { colors, typography, radius } = theme;
+  const { colors, typography, radius, spacing } = theme;
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
