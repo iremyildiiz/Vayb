@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Vayb",
+    "slug": "vayb",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/vayb-icon-clean.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/vayb-splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FF7A5C"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.iremyildiz.vaybapp",
+      "buildNumber": "1"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FF7A5C",
+        "foregroundImage": "./assets/vayb-icon-clean.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/vayb-icon-clean.png"
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Vayb, paylaşmak istediğin fotoğrafı seçebilmen için galerine erişir.",
+          "cameraPermission": "Vayb, anlık bir kare çekebilmen için kameraya erişir."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Vayb, galerindeki kareleri uygulama içinde gösterip paylaşabilmen için erişir.",
+          "savePhotosPermission": "Vayb, çektiğin kareleri galerine kaydedebilmek için erişir."
+        }
+      ]
+    ]
+  }
+}

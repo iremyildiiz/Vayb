@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vayb — Yasal</title>
+  <style>
+    :root { --bg:#FFFBF8; --fg:#1F1A24; --muted:#8A837C; --accent:#FF7A5C; --border:#F1E9E4; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg);
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      line-height:1.6; }
+    .wrap { max-width:760px; margin:0 auto; padding:32px 20px 64px; }
+    header { border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:24px; }
+    h1 { font-size:28px; margin:0 0 4px; letter-spacing:-.5px; }
+    .brandline { color:var(--muted); font-size:14px; }
+    nav a { color:var(--accent); text-decoration:none; margin-right:16px; font-weight:600; font-size:14px; }
+    h2 { font-size:22px; margin:40px 0 4px; }
+    h3 { font-size:16px; margin:22px 0 4px; }
+    p { margin:6px 0; }
+    .muted { color:var(--muted); font-size:13px; }
+    .doc { border-top:1px solid var(--border); padding-top:8px; }
+    footer { margin-top:48px; color:var(--muted); font-size:13px; border-top:1px solid var(--border); padding-top:16px; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#141110; --fg:#F7F2F5; --muted:#A39C95; --border:#2C2621; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Vayb</h1>
+      <div class="brandline">İrem Yıldız · Yasal metinler · Sürüm 1.0 · 1 Ağustos 2026</div>
+      <nav style="margin-top:12px">
+        <a href="#gizlilik">Gizlilik Politikası</a>
+        <a href="#kosullar">Kullanım Koşulları</a>
+      </nav>
+    </header>
+
+    <!-- GİZLİLİK POLİTİKASI -->
+    <section id="gizlilik" class="doc">
+      <h2>Gizlilik Politikası</h2>
+      <p>Vayb (“uygulama”), İrem Yıldız tarafından sunulur. Bu metin, uygulamayı kullanırken hangi verileri işlediğimizi açıklar.</p>
+
+      <h3>Sen sağlarsın</h3>
+      <p><strong>Hesap:</strong> e-posta adresi (giriş ve kurtarma için) ve şifre. Şifre Firebase Authentication ile yönetilir; düz metin şifreni görmez/saklamayız. E-posta diğer kullanıcılara gösterilmez.</p>
+      <p><strong>Profil:</strong> kullanıcı adı, görünen ad, biyografi, profil fotoğrafı, gizli/açık tercihi.</p>
+      <p><strong>İçerik:</strong> fotoğraflar, not metni ve isteğe bağlı konum etiketi.</p>
+      <p><strong>Etkileşimler:</strong> parıltı (beğeni), kısa tepkiler, kaydettiklerin, takip ilişkileri.</p>
+      <p><strong>Mesajlar:</strong> birebir sohbet (DM) içerikleri.</p>
+      <p><strong>Moderasyon:</strong> engelleme ve şikayet kayıtların.</p>
+      <p><strong>Yasal onay:</strong> koşulları kabul ettiğin zaman ve sürümü.</p>
+
+      <h3>Konum</h3>
+      <p>Konum etiketi senin <strong>yazdığın metindir</strong>. Uygulama cihazının GPS/konum servisini <strong>kullanmaz</strong> ve konum izni istemez.</p>
+
+      <h3>Otomatik / teknik veriler</h3>
+      <p>Zaman damgaları ve uygulama içi bildirim kayıtları. Altyapımız (Firebase) hizmeti çalıştırırken bağlantı/teknik veriler (ör. IP) işleyebilir; sunucu işlevleri kullanıcı adıyla girişte ve konum önerisinde gerekli veriyi geçici olarak işler.</p>
+
+      <h3>Verileri neden işleriz</h3>
+      <p>Hesabını oluşturmak/güvence altına almak, paylaşımlarını göstermek, mesajlaşmayı sağlamak, kötüye kullanımı önlemek (engelleme/şikayet), konum önerisi sunmak ve uygulamayı çalıştırmak için.</p>
+
+      <h3>Üçüncü taraflar</h3>
+      <p>Google Firebase (Authentication, Firestore, Storage, Cloud Functions) barındırma altyapısıdır. Konum etiketi yazarken yazdığın metin öneri için Google Places’e gönderilir. Verilerini <strong>satmayız</strong>. Bazı sunucu işlevlerimiz ABD’de çalışır; ilgili veriler işlenirken yurt dışına aktarılabilir.</p>
+
+      <h3>Saklama ve silme</h3>
+      <p>Hesabını uygulama içinden silebilirsin (Ayarlar → Hesabı sil): giriş bilgileri, profil, gönderiler, yüklediğin fotoğraflar ve etkileşim/engel kayıtları kaldırılır. Birebir mesaj geçmişi karşı taraftaki kopyada kalabilir. Şikayet kayıtları güvenlik amacıyla makul süre saklanabilir.</p>
+
+      <h3>İzinler</h3>
+      <p>Fotoğraf paylaşmak için galeri ve isteğe bağlı çekim için kamera izni isteriz; yalnızca senin seçtiğin kareler için kullanılır. Konum izni istemeyiz.</p>
+
+      <h3>Çocuklar</h3>
+      <p>Uygulama küçük yaştaki kullanıcılar için tasarlanmamıştır. Uygunsuz bir hesabı <a href="mailto:dev.irem@icloud.com">dev.irem@icloud.com</a> ile bildir.</p>
+
+      <h3>Haklar ve iletişim</h3>
+      <p>Verilerine erişmek, düzeltmek (Profili düzenle) veya silmek (Hesabı sil) için uygulamayı kullanabilir ya da <a href="mailto:dev.irem@icloud.com">dev.irem@icloud.com</a> ile iletişime geçebilirsin.</p>
+
+      <h3>Değişiklikler</h3>
+      <p>Bu politikayı güncelleyebiliriz; önemli değişikliklerde uygulama içinde bilgilendiririz ve sürüm numarasını güncelleriz.</p>
+    </section>
+
+    <!-- KULLANIM KOŞULLARI -->
+    <section id="kosullar" class="doc" style="margin-top:40px">
+      <h2>Kullanım Koşulları</h2>
+      <p>Vayb’i kullanarak bu koşulları kabul edersin.</p>
+
+      <h3>Kabul ve uygunluk</h3>
+      <p>Kabul etmiyorsan uygulamayı kullanma. Hesap açmak için geçerli yaşta ve ehliyette olduğunu beyan edersin.</p>
+
+      <h3>Topluluk kuralları (sıfır tolerans)</h3>
+      <p>Vayb “kendini değil gördüğün güzel anı paylaş” fikrine dayanır. Yasak: taciz, zorbalık, nefret söylemi, tehdit; spam; uygunsuz/müstehcen veya yasa dışı içerik; başkasının haklarını ihlal eden içerik; çocukların istismarına ilişkin her tür içerik. Uygunsuz içeriğe sıfır tolerans uygulanır.</p>
+
+      <h3>İçeriğin</h3>
+      <p>Paylaştığın içerikten sen sorumlusun ve paylaşmak için gerekli haklara sahip olduğunu beyan edersin. Bize yalnızca hizmeti sunmak amacıyla sınırlı, telifsiz bir kullanım izni verirsin; içeriğin sana aittir.</p>
+
+      <h3>Moderasyon</h3>
+      <p>Kullanıcıları/gönderileri şikayet edebilir, kullanıcıları engelleyebilirsin. Kuralları ihlal eden içerik ve hesaplar kaldırılabilir, kısıtlanabilir veya askıya alınabilir.</p>
+
+      <h3>Hesap güvenliği</h3>
+      <p>Hesabının ve şifrenin güvenliğinden sen sorumlusun. Hesabını dilediğin zaman silebilirsin.</p>
+
+      <h3>Kabul edilmeyen kullanım</h3>
+      <p>Sahte etkileşim/sayaç manipülasyonu, otomatik erişim, başkası adına işlem veya güvenlik önlemlerini atlatma yasaktır.</p>
+
+      <h3>Üçüncü taraf hizmetleri</h3>
+      <p>Uygulama Google Firebase ve Google Places gibi hizmetlere dayanır; bu hizmetlerin kendi koşulları geçerli olabilir.</p>
+
+      <h3>Sorumluluk ve fesih</h3>
+      <p>Hizmet “olduğu gibi” sunulur. Yasaların izin verdiği ölçüde İrem Yıldız dolaylı zararlardan sorumlu tutulamaz. Bu koşulları ihlal eden hesapların erişimini sonlandırabiliriz.</p>
+
+      <h3>Değişiklikler ve iletişim</h3>
+      <p>Koşulları güncelleyebiliriz; önemli değişiklikleri uygulama içinde duyururuz. Sorular için: <a href="mailto:dev.irem@icloud.com">dev.irem@icloud.com</a></p>
+    </section>
+
+    <footer>
+      İrem Yıldız · <a href="mailto:dev.irem@icloud.com">dev.irem@icloud.com</a> · Son güncelleme: 1 Ağustos 2026
+    </footer>
+  </div>
+</body>
+</html>

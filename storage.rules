@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+    // Yüklenen dosya image mı ve makul boyutta mı? (≤ 8 MB)
+    function validImage() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < 8 * 1024 * 1024;
+    }
+
+    // Gönderi fotoğrafları: yalnızca sahibi yükler/siler; okuma giriş yapan herkese.
+    match /posts/{uid}/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid && validImage();
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Profil fotoğrafları: yalnızca sahibi yükler/siler.
+    match /profilePhotos/{uid}/{fileName} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && request.auth.uid == uid && validImage();
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Başka her yol kapalı.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
