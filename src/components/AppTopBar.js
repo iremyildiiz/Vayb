@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { View, Pressable, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import MessagesIcon from './MessagesIcon';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -43,14 +44,14 @@ export default function AppTopBar({
     return () => { alive = false; };
   }, [showNotifications, user?.uid]));
 
-  const IconButton = ({ name, label, onPress, badgeCount = 0 }) => (
+  const IconButton = ({ name, iconNode, label, onPress, badgeCount = 0 }) => (
     <Pressable
       onPress={onPress}
       accessibilityLabel={label}
       hitSlop={8}
       style={{ width: 36, height: 36, alignItems: 'center', justifyContent: 'center', marginLeft: spacing.xs }}
     >
-      <Ionicons name={name} size={25} color={colors.textPrimary} />
+      {iconNode || <Ionicons name={name} size={25} color={colors.textPrimary} />}
       {badgeCount > 0 ? (
         <View
           style={{
@@ -93,7 +94,7 @@ export default function AppTopBar({
       ) : null}
       {showChat ? (
         <IconButton
-          name="chatbubble-ellipses-outline"
+          iconNode={<MessagesIcon size={25} color={colors.textPrimary} spark={colors.accent} />}
           label="Sohbet"
           onPress={() => navigation.navigate('Conversations')}
           badgeCount={unreadChats}

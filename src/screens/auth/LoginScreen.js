@@ -1,7 +1,7 @@
 // LoginScreen — kullanıcı adı + şifre ile giriş. E-posta arka planda çözülür.
 
 import { useState } from 'react';
-import { View, Text, Image, Pressable, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { View, Text, Pressable, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Screen from '../../components/Screen';
@@ -52,20 +52,6 @@ export default function LoginScreen({ navigation }) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={{ alignItems: 'center', marginBottom: spacing.xxl }}>
-            <Image
-              source={require('../../../assets/vayb-welcome-mark.png')}
-              style={{
-                width: 84,
-                height: 84,
-                borderRadius: 22,
-                marginBottom: spacing.md,
-                shadowColor: '#FF875A',
-                shadowOpacity: 0.28,
-                shadowRadius: 14,
-                shadowOffset: { width: 0, height: 6 },
-              }}
-              resizeMode="cover"
-            />
             <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.display, color: colors.textPrimary }}>
               Tekrar Hoşgeldin
             </Text>

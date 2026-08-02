@@ -1,7 +1,8 @@
 // WelcomeScreen — Auth akışının karşılama ekranı.
-// Marka + felsefe cümlesi + "Hesap oluştur" / "Giriş yap".
+// Marka (logo karosu + hafif ışıma) + felsefe cümlesi + "Giriş yap" / "Hesap oluştur".
 
 import { Image, View, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Screen from '../../components/Screen';
 import GradientButton from '../../components/GradientButton';
 import { useTheme } from '../../context/ThemeContext';
@@ -14,71 +15,44 @@ export default function WelcomeScreen({ navigation }) {
 
   return (
     <Screen style={{ justifyContent: 'space-between' }}>
+      {/* üstte çok hafif gün batımı tonu */}
+      <LinearGradient
+        colors={['rgba(255,135,90,0.16)', 'rgba(255,196,140,0.05)', 'transparent']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 340 }}
+        pointerEvents="none"
+      />
+
       {/* üst: marka kimliği */}
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <View
-          style={{
-            width: 170,
-            height: 170,
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: spacing.xl,
-          }}
-        >
-          <View
+        <View style={{ alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xl }}>
+          {/* yumuşak ışıma halkaları */}
+          <View style={{ position: 'absolute', width: 208, height: 208, borderRadius: 104, backgroundColor: 'rgba(255,135,90,0.06)' }} />
+          <View style={{ position: 'absolute', width: 164, height: 164, borderRadius: 82, backgroundColor: 'rgba(255,135,90,0.08)' }} />
+          {/* logo karosu (yuvarlatılmış kare, şeftali ışımalı gölge) */}
+          <Image
+            source={welcomeMark}
+            resizeMode="cover"
             style={{
-              position: 'absolute',
-              width: 170,
-              height: 170,
-              borderRadius: 85,
-              backgroundColor: 'rgba(255, 196, 150, 0.12)',
-            }}
-          />
-          <View
-            style={{
-              position: 'absolute',
-              width: 132,
-              height: 132,
-              borderRadius: 66,
-              backgroundColor: 'rgba(255, 170, 130, 0.12)',
-            }}
-          />
-          <View
-            style={{
-              width: 128,
-              height: 128,
-              borderRadius: 64,
-              overflow: 'hidden',
-              shadowColor: colors.accent,
-              shadowOpacity: 0.18,
+              width: 120,
+              height: 120,
+              borderRadius: 30,
+              shadowColor: '#FF875A',
+              shadowOpacity: 0.34,
               shadowRadius: 22,
               shadowOffset: { width: 0, height: 12 },
             }}
-          >
-            <Image
-              source={welcomeMark}
-              resizeMode="cover"
-              style={{
-                width: 128,
-                height: 128,
-              }}
-            />
-          </View>
+          />
         </View>
 
-        <Text style={{
-  fontFamily: 'Outfit-Bold', // veya PlusJakartaSans-ExtraBold
-  fontWeight: '700',
-  fontSize: typography.size.display, // Örn: 40-48 arası harika durur
-  color: colors.textPrimary,
-  letterSpacing: -1, // Kalın fontlarda aralığı biraz daha daraltmak logomsu bir etki verir
-}}>
+        <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.display, color: colors.textPrimary, letterSpacing: -0.5 }}>
           Vayb
         </Text>
         <Text
           style={{
-            fontFamily: 'PlusJakartaSans-Regular',
-            fontSize: 13,
+            fontFamily: typography.fontBody,
+            fontSize: typography.size.footnote,
             color: colors.textMuted,
             textAlign: 'center',
             marginTop: spacing.md,
@@ -86,7 +60,7 @@ export default function WelcomeScreen({ navigation }) {
             lineHeight: 20,
           }}
         >
-          Vaybını yansıt: Manzaranı, sıcak bir kahveni, doğru ışığını ya da sadece hissettiğin o küçük anı paylaş.
+          Vaybını yansıt: manzaranı, sıcak bir kahveni, doğru ışığını ya da sadece hissettiğin o küçük anı paylaş.
         </Text>
       </View>
 

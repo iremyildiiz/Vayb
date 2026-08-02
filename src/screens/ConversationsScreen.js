@@ -6,6 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
+import MessagesIcon from '../components/MessagesIcon';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { getConversations, clearConversation } from '../services/chats';
@@ -143,7 +144,7 @@ export default function ConversationsScreen({ navigation }) {
             </View>
           ) : (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: spacing.xxl }}>
-              <Ionicons name="paper-plane-outline" size={42} color={colors.textMuted} />
+              <MessagesIcon size={46} color={colors.textMuted} spark={colors.accent} />
               <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.title, color: colors.textPrimary, marginTop: spacing.md }}>
                 Henüz sohbet yok
               </Text>
