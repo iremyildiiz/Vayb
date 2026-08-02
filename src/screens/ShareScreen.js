@@ -17,9 +17,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Modal,
   useWindowDimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
@@ -134,7 +134,7 @@ const GridItem = memo(function GridItem({ asset, size, selected, accent, surface
 
 export default function ShareScreen({ navigation }) {
   const { theme } = useTheme();
-  const { colors, typography, spacing, radius, gradients } = theme;
+  const { colors, typography, spacing, radius } = theme;
   const { width: screenW, height: screenH } = useWindowDimensions();
 
   const previewH = Math.round(screenH * 0.4);
@@ -145,13 +145,15 @@ export default function ShareScreen({ navigation }) {
   const [endCursor, setEndCursor] = useState(null);
   const [hasNext, setHasNext] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [albums, setAlbums] = useState([]);
+  const [selectedAlbum, setSelectedAlbum] = useState(null); // null = Tüm Fotoğraflar
+  const [albumPickerOpen, setAlbumPickerOpen] = useState(false);
 
   const [selected, setSelected] = useState(null); // { id, uri, width, height, localUri, raw }
   const [caption, setCaption] = useState('');
   const [locationName, setLocationName] = useState('');
   const [showLoc, setShowLoc] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [done, setDone] = useState(false);
   const [cropKey, setCropKey] = useState('free');
   const [step, setStep] = useState('select');
   const [locationPicked, setLocationPicked] = useState(false);
@@ -194,6 +196,14 @@ export default function ShareScreen({ navigation }) {
   useEffect(() => {
     if (perm?.granted) loadAssets(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [perm?.granted, selectedAlbum]);
+
+  // Galeri albümlerini yükle (Son Eklenenler, Ekran Görüntüleri, özel albümler...).
+  useEffect(() => {
+    if (!perm?.granted) return;
+    MediaLibrary.getAlbumsAsync({ includeSmartAlbums: true })
+      .then((list) => setAlbums((list || []).filter((a) => (a.assetCount || 0) > 0)))
+      .catch(() => {});
   }, [perm?.granted]);
 
   const loadAssets = useCallback(
@@ -207,6 +217,7 @@ export default function ShareScreen({ navigation }) {
           after: reset ? undefined : endCursor,
           mediaType: ['photo'],
           sortBy: [['creationTime', false]], // en yeni önce
+          ...(selectedAlbum ? { album: selectedAlbum.id } : {}), // seçili albüm (yoksa tümü)
         });
         setAssets((prev) => (reset ? res.assets : [...prev, ...res.assets]));
         setEndCursor(res.endCursor);
@@ -219,7 +230,7 @@ export default function ShareScreen({ navigation }) {
         setLoadingMore(false);
       }
     },
-    [endCursor, hasNext, loadingMore, selected],
+    [endCursor, hasNext, loadingMore, selected, selectedAlbum],
   );
 
   // Bir kareyi seç: önizlemeyi hemen göster, yükleme için localUri'yi çöz.
@@ -264,7 +275,6 @@ export default function ShareScreen({ navigation }) {
     setCaption('');
     setLocationName('');
     setShowLoc(false);
-    setDone(false);
     setCropKey('free');
     setStep('select');
     setLocationPicked(false);
@@ -288,7 +298,9 @@ export default function ShareScreen({ navigation }) {
       const postWidth = crop?.aspect ? crop.aspect[0] : selected.width;
       const postHeight = crop?.aspect ? crop.aspect[1] : selected.height;
       await createPost({ uri: uploadUri, caption, locationName, width: postWidth, height: postHeight });
-      setDone(true);
+      // Paylaşım sonrası profile yönlendir (yeni an orada görünür).
+      reset();
+      navigation.navigate('Main', { screen: 'Profile' });
     } catch (e) {
       // Gerçek sebebi çıkar: StorageError'ın sunucu yanıtı
       const serverResponse =
@@ -304,32 +316,6 @@ export default function ShareScreen({ navigation }) {
       setUploading(false);
     }
   };
-
-  // ---------- Başarı ekranı ----------
-  if (done) {
-    return (
-      <Screen style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <LinearGradient
-          colors={gradients.sunset}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ width: 72, height: 72, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', marginBottom: spacing.lg }}
-        >
-          <Ionicons name="checkmark" size={40} color="#FFFFFF" />
-        </LinearGradient>
-        <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.title, color: colors.textPrimary }}>
-          Paylaşıldı
-        </Text>
-        <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.xl }}>
-          Anın Vayb’de.
-        </Text>
-        <View style={{ width: '100%', gap: spacing.md }}>
-          <GradientButton label="Yeni paylaşım" onPress={reset} />
-          <GradientButton label="Akışa git" variant="ghost" onPress={() => { reset(); navigation.navigate('Feed'); }} />
-        </View>
-      </Screen>
-    );
-  }
 
   // ---------- İzin yoksa ----------
   const renderPermission = () => (
@@ -603,6 +589,18 @@ export default function ShareScreen({ navigation }) {
           ) : !perm.granted ? (
             renderPermission()
           ) : (
+            <>
+            <Pressable
+              onPress={() => setAlbumPickerOpen(true)}
+              style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm }}
+              hitSlop={6}
+            >
+              <Ionicons name="albums-outline" size={15} color={colors.textMuted} />
+              <Text style={{ marginLeft: 6, fontFamily: typography.fontBodyMedium, fontSize: typography.size.footnote, color: colors.textPrimary }}>
+                {selectedAlbum ? selectedAlbum.title : 'Tüm Fotoğraflar'}
+              </Text>
+              <Ionicons name="chevron-down" size={15} color={colors.textMuted} style={{ marginLeft: 4 }} />
+            </Pressable>
             <FlatList
               data={assets}
               keyExtractor={(item) => item.id}
@@ -631,6 +629,7 @@ export default function ShareScreen({ navigation }) {
                 ) : null
               }
             />
+            </>
           )}
         </View>
 
@@ -651,6 +650,36 @@ export default function ShareScreen({ navigation }) {
             disabled={!selected}
           />
         </View>
+
+        {/* Albüm seçme sayfası */}
+        <Modal visible={albumPickerOpen} transparent animationType="slide" onRequestClose={() => setAlbumPickerOpen(false)}>
+          <Pressable onPress={() => setAlbumPickerOpen(false)} style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' }}>
+            <Pressable onPress={() => {}} style={{ backgroundColor: colors.bg, borderTopLeftRadius: radius.input, borderTopRightRadius: radius.input, paddingTop: spacing.md, paddingBottom: spacing.xl, maxHeight: '70%' }}>
+              <View style={{ width: 36, height: 4, borderRadius: radius.pill, backgroundColor: colors.border, alignSelf: 'center', marginBottom: spacing.md }} />
+              <Text style={{ fontFamily: typography.fontDisplayMedium, fontSize: typography.size.body, color: colors.textPrimary, paddingHorizontal: spacing.xl, marginBottom: spacing.sm }}>
+                Albüm seç
+              </Text>
+              <ScrollView>
+                {[{ id: null, title: 'Tüm Fotoğraflar', assetCount: 0 }, ...albums].map((al) => {
+                  const active = (al.id || null) === (selectedAlbum?.id || null);
+                  return (
+                    <Pressable
+                      key={al.id || 'all'}
+                      onPress={() => { setSelectedAlbum(al.id ? al : null); setAlbumPickerOpen(false); }}
+                      style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: spacing.md, paddingHorizontal: spacing.xl }}
+                    >
+                      <Ionicons name={al.id ? 'folder-outline' : 'images-outline'} size={18} color={active ? colors.accent : colors.textMuted} />
+                      <Text style={{ flex: 1, marginLeft: spacing.md, fontFamily: typography.fontBody, fontSize: typography.size.body, color: active ? colors.accent : colors.textPrimary }}>
+                        {al.title}{al.assetCount ? `  ·  ${al.assetCount}` : ''}
+                      </Text>
+                      {active ? <Ionicons name="checkmark" size={18} color={colors.accent} /> : null}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </KeyboardAvoidingView>
     </Screen>
   );

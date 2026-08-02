@@ -91,7 +91,7 @@ export default function WelcomeScreen({ navigation }) {
       </View>
 
       {/* alt: aksiyonlar */}
-      <View style={{ gap: spacing.md, paddingBottom: spacing.lg }}>
+      <View style={{ gap: spacing.md, paddingBottom: spacing.xxl + spacing.lg }}>
         <GradientButton label="Giriş yap" onPress={() => navigation.navigate('Login')} />
         <GradientButton label="Hesap oluştur" variant="ghost" onPress={() => navigation.navigate('Register')} />
       </View>
