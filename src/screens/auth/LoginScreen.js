@@ -1,8 +1,9 @@
 // LoginScreen — kullanıcı adı + şifre ile giriş. E-posta arka planda çözülür.
 
 import { useState } from 'react';
-import { View, Text, Pressable, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
+import { View, Text, Image, Pressable, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import Screen from '../../components/Screen';
 import TextField from '../../components/TextField';
 import GradientButton from '../../components/GradientButton';
@@ -37,17 +38,41 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <Screen padded={false}>
+      {/* üstte çok hafif gün batımı tonu */}
+      <LinearGradient
+        colors={['rgba(255,135,90,0.14)', 'rgba(255,196,140,0.04)', 'transparent']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 260 }}
+        pointerEvents="none"
+      />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, paddingHorizontal: spacing.xl, paddingTop: spacing.xxl, paddingBottom: spacing.xl }}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.display, color: colors.textPrimary, marginBottom: spacing.xs }}>
-            Tekrar Hoşgeldin
-          </Text>
-          <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginBottom: spacing.xxl }}>
-            Anları kaldığın yerden keşfet.
-          </Text>
+          <View style={{ alignItems: 'center', marginBottom: spacing.xxl }}>
+            <Image
+              source={require('../../../assets/vayb-welcome-mark.png')}
+              style={{
+                width: 84,
+                height: 84,
+                borderRadius: 22,
+                marginBottom: spacing.md,
+                shadowColor: '#FF875A',
+                shadowOpacity: 0.28,
+                shadowRadius: 14,
+                shadowOffset: { width: 0, height: 6 },
+              }}
+              resizeMode="cover"
+            />
+            <Text style={{ fontFamily: typography.fontDisplay, fontSize: typography.size.display, color: colors.textPrimary }}>
+              Tekrar Hoşgeldin
+            </Text>
+            <Text style={{ fontFamily: typography.fontBody, fontSize: typography.size.footnote, color: colors.textMuted, marginTop: spacing.xs, textAlign: 'center' }}>
+              Anları kaldığın yerden keşfet.
+            </Text>
+          </View>
 
           <TextField
             label="Kullanıcı adı"
