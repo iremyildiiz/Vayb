@@ -14,13 +14,25 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.iremyildiz.vaybapp",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FF7A5C",
         "foregroundImage": "./assets/vayb-icon-clean.png"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/vayb-icon-clean.png"
@@ -41,6 +53,11 @@
           "savePhotosPermission": "Vayb, çektiğin kareleri galerine kaydedebilmek için erişir."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "4afaf5cc-db84-4402-8a42-172cbf5b960e"
+      }
+    }
   }
 }
