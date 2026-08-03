@@ -312,10 +312,13 @@ export default function ShareScreen({ navigation }) {
         opts.height = Math.round(ah * s);
       }
       const img = await ImageCropPicker.openCropper(opts);
+      // react-native-image-crop-picker iOS'ta 'file://' önekSİZ mutlak yol dönebilir
+      // (/private/var/...). Hem <Image> hem upload (XHR/blob) 'file://' ister → normalize.
+      const croppedUri = img.path.startsWith('file') ? img.path : `file://${img.path}`;
       setSelected((prev) => (prev ? {
         ...prev,
-        uri: img.path,
-        localUri: img.path,
+        uri: croppedUri,
+        localUri: croppedUri,
         width: img.width,
         height: img.height,
         raw: null, // artık kırpılmış dosya
