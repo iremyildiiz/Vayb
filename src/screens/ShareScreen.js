@@ -195,27 +195,6 @@ export default function ShareScreen({ navigation }) {
     setCropKey('free');
   };
 
-  // İlk sayfa (izin verilince)
-  // loadAssets kimliği sık değişir; efektlerin gereksiz tetiklenmemesi için ref üzerinden çağır.
-  const loadAssetsRef = useRef(loadAssets);
-  loadAssetsRef.current = loadAssets;
-
-  // İzin verilince / albüm değişince / ekrana (Paylaş sekmesine) dönünce ilk sayfayı yükle.
-  useFocusEffect(
-    useCallback(() => {
-      if (perm?.granted) loadAssetsRef.current(true);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [perm?.granted, selectedAlbum])
-  );
-
-  // Uygulama arka plandan öne gelince (yeni çekilen foto/ekran görüntüsü için) tazele.
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active' && perm?.granted) loadAssetsRef.current(true);
-    });
-    return () => sub.remove();
-  }, [perm?.granted]);
-
   // Galeri albümlerini yükle (Son Eklenenler, Ekran Görüntüleri, özel albümler...).
   useEffect(() => {
     if (!perm?.granted) return;
@@ -274,6 +253,26 @@ export default function ShareScreen({ navigation }) {
       }
     }
   }, []);
+
+  // loadAssets kimliği sık değişir; efektler ref üzerinden çağırır (loadAssets tanımından SONRA).
+  const loadAssetsRef = useRef(loadAssets);
+  loadAssetsRef.current = loadAssets;
+
+  // İzin verilince / albüm değişince / Paylaş sekmesine dönünce ilk sayfayı yükle.
+  useFocusEffect(
+    useCallback(() => {
+      if (perm?.granted) loadAssetsRef.current(true);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [perm?.granted, selectedAlbum])
+  );
+
+  // Uygulama arka plandan öne gelince (yeni çekilen foto/ekran görüntüsü için) tazele.
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && perm?.granted) loadAssetsRef.current(true);
+    });
+    return () => sub.remove();
+  }, [perm?.granted]);
 
   // Anlık çekim (kamera)
   const takePhoto = async () => {
