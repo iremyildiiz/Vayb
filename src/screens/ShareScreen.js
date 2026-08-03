@@ -4,6 +4,7 @@
 // minimal not + opsiyonel konum chip'i + gün batımı gradyanlı "Paylaş".
 
 import { useState, useEffect, useCallback, useRef, memo } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { httpsCallable } from 'firebase/functions';
 import {
   View,
@@ -18,6 +19,7 @@ import {
   Platform,
   Alert,
   Modal,
+  AppState,
   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -194,10 +196,25 @@ export default function ShareScreen({ navigation }) {
   };
 
   // İlk sayfa (izin verilince)
+  // loadAssets kimliği sık değişir; efektlerin gereksiz tetiklenmemesi için ref üzerinden çağır.
+  const loadAssetsRef = useRef(loadAssets);
+  loadAssetsRef.current = loadAssets;
+
+  // İzin verilince / albüm değişince / ekrana (Paylaş sekmesine) dönünce ilk sayfayı yükle.
+  useFocusEffect(
+    useCallback(() => {
+      if (perm?.granted) loadAssetsRef.current(true);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [perm?.granted, selectedAlbum])
+  );
+
+  // Uygulama arka plandan öne gelince (yeni çekilen foto/ekran görüntüsü için) tazele.
   useEffect(() => {
-    if (perm?.granted) loadAssets(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [perm?.granted, selectedAlbum]);
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && perm?.granted) loadAssetsRef.current(true);
+    });
+    return () => sub.remove();
+  }, [perm?.granted]);
 
   // Galeri albümlerini yükle (Son Eklenenler, Ekran Görüntüleri, özel albümler...).
   useEffect(() => {
