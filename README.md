@@ -8,6 +8,12 @@ Vayb; manzara, isik, mekan ve gunluk anlari sakin bir sosyal deneyimle bulusturu
 
 Vayb App Store'da yayindadir.
 
+## Ekranlar
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0276e757-9102-42ac-b17b-94f97ace539f" alt="Vayb uygulama ekranlari" width="720" />
+</p>
+
 ## Ozellikler
 
 - Foto-oncelikli akis, Vaybla kesif ekrani ve profil masonry gorunumu
