@@ -28,6 +28,10 @@ Vayb App Store'da yayindadir.
 - Firebase Cloud Functions
 - Google Places API
 
+##Ekranlar
+<img width="1254" height="1254" alt="VAYB" src="https://github.com/user-attachments/assets/0276e757-9102-42ac-b17b-94f97ace539f" />
+
+
 ## Guvenlik
 
 Firestore ve Storage kurallari kullanici verilerinin sahiplik sinirlarini koruyacak sekilde yapilandirilmistir. Google Places anahtari istemciye eklenmeden Cloud Functions uzerinden kullanilir.
