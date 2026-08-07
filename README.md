@@ -30,7 +30,7 @@ Vayb App Store'da yayindadir.
 
 ## Ekranlar
 
-<img width="500" height="500" alt="VAYB" src="https://github.com/user-attachments/assets/0276e757-9102-42ac-b17b-94f97ace539f" />
+<img width="300" height="300" alt="VAYB" src="https://github.com/user-attachments/assets/0276e757-9102-42ac-b17b-94f97ace539f" />
 
 
 ## Guvenlik
