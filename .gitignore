@@ -30,8 +30,15 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# local env files and service credentials
+.env
+.env.*
+!.env.example
+!functions/.env.example
+service-account*.json
+*service-account*.json
+GoogleService-Info.plist
+google-services.json
 
 # typescript
 *.tsbuildinfo
