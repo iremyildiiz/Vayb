@@ -9,6 +9,18 @@ dist/
 web-build/
 expo-env.d.ts
 
+# AI coding assistants and editor settings
+.claude/
+.codex/
+.cursor/
+.vscode/
+.idea/
+AGENTS.md
+CLAUDE.md
+
+# Local Firebase deployment metadata
+.firebase/
+
 # Native
 .kotlin/
 *.orig.*
@@ -29,6 +41,14 @@ yarn-error.*
 # macOS
 .DS_Store
 *.pem
+
+# Xcode local build and user data
+DerivedData/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xcarchive
+*.dSYM
 
 # local env files and service credentials
 .env
